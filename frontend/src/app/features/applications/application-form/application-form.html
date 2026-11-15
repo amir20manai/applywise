@@ -81,10 +81,51 @@
       }
     </div>
 
+    <section class="ai-box" aria-labelledby="ai-title">
+      <h2 id="ai-title">Write your cover letter with AI</h2>
+      <p class="ai-note">
+        Only your name, the job title, the company, the location and the text below are sent.
+        Your CV, email and phone number are not.
+      </p>
+
+      <div class="ai-row">
+        <div class="field">
+          <label for="aiHighlights">What should the letter highlight? (optional)</label>
+          <textarea id="aiHighlights" rows="3" formControlName="aiHighlights"
+                    placeholder="Skills, projects, why you want this role..."
+                    [class.invalid]="f.aiHighlights.invalid"></textarea>
+          @if (f.aiHighlights.invalid) {
+            <span class="field-error">Keep it under 1500 characters.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="aiLanguage">Language</label>
+          <select id="aiLanguage" formControlName="aiLanguage">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+          </select>
+        </div>
+      </div>
+
+      @if (aiError()) {
+        <div class="alert" role="alert">{{ aiError() }}</div>
+      }
+
+      <div class="ai-actions">
+        <button type="button" class="ghost" [disabled]="generating()" (click)="generateLetter()">
+          {{ generating() ? 'Writing...' : 'Generate cover letter' }}
+        </button>
+        @if (generating()) {
+          <span class="ai-wait" role="status">This can take up to a minute.</span>
+        }
+      </div>
+    </section>
+
     <div class="field">
       <label for="coverLetter">Cover letter</label>
-      <textarea id="coverLetter" rows="6" formControlName="coverLetter"
-                placeholder="Paste the cover letter you sent with this application."
+      <textarea id="coverLetter" rows="10" formControlName="coverLetter"
+                placeholder="Paste the cover letter you sent, or generate one above and edit it."
                 [class.invalid]="f.coverLetter.invalid"></textarea>
       @if (f.coverLetter.invalid) {
         <span class="field-error">The cover letter can have up to 3000 characters.</span>

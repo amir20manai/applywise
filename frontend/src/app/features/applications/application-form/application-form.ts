@@ -4,7 +4,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ApplicationApi } from '../../../core/services/application-api';
 import { ResumeApi } from '../../../core/services/resume-api';
+import { AiApi } from '../../../core/services/ai-api';
 import { ApplicationStatus, STATUSES } from '../../../core/models/application.model';
+import { LetterLanguage } from '../../../core/models/ai.model';
 import { Resume } from '../../../core/models/resume.model';
 
 @Component({
@@ -19,6 +21,7 @@ export class ApplicationForm implements OnInit {
   private route = inject(ActivatedRoute);
   private applications = inject(ApplicationApi);
   private resumeApi = inject(ResumeApi);
+  private ai = inject(AiApi);
 
   statuses = STATUSES;
   resumes = signal<Resume[]>([]);
@@ -26,6 +29,9 @@ export class ApplicationForm implements OnInit {
   loading = signal(false);
   saving = signal(false);
   errorMessage = signal('');
+
+  generating = signal(false);
+  aiError = signal('');
 
   form = this.fb.nonNullable.group({
     jobTitle: ['', Validators.required],
@@ -36,6 +42,9 @@ export class ApplicationForm implements OnInit {
     resumeId: [null as number | null],
     notes: ['', Validators.maxLength(3000)],
     coverLetter: ['', Validators.maxLength(3000)],
+    // Champs de l'assistant IA (jamais envoyés à l'enregistrement)
+    aiHighlights: ['', Validators.maxLength(1500)],
+    aiLanguage: ['en' as LetterLanguage],
   });
 
   get f() {
@@ -62,6 +71,57 @@ export class ApplicationForm implements OnInit {
       },
       error: () => this.resumes.set([]),
     });
+  }
+
+  generateLetter(): void {
+    this.aiError.set('');
+
+    const v = this.form.getRawValue();
+    const jobTitle = v.jobTitle.trim();
+    const companyName = v.companyName.trim();
+
+    if (!jobTitle || !companyName) {
+      this.f.jobTitle.markAsTouched();
+      this.f.companyName.markAsTouched();
+      this.aiError.set('Fill in the job title and the company first.');
+      return;
+    }
+
+    if (this.f.aiHighlights.invalid) {
+      this.f.aiHighlights.markAsTouched();
+      return;
+    }
+
+    if (v.coverLetter.trim() && !confirm('Replace the cover letter you already wrote?')) {
+      return;
+    }
+
+    this.generating.set(true);
+
+    this.ai
+      .coverLetter({
+        jobTitle,
+        companyName,
+        location: v.location.trim() || undefined,
+        highlights: v.aiHighlights.trim() || undefined,
+        language: v.aiLanguage,
+      })
+      .subscribe({
+        next: (result) => {
+          this.f.coverLetter.setValue(result.text.slice(0, 3000));
+          this.f.coverLetter.markAsDirty();
+          this.generating.set(false);
+        },
+        error: (err) => {
+          this.generating.set(false);
+          const details = err.error?.validationErrors;
+          this.aiError.set(
+            details
+              ? Object.values(details).join(' ')
+              : (err.error?.message ?? 'Could not write the letter. Try again.'),
+          );
+        },
+      });
   }
 
   submit(): void {

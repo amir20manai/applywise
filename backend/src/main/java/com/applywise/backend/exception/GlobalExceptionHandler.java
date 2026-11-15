@@ -65,6 +65,13 @@ public class GlobalExceptionHandler {
 
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
     }
+    // 503 - AI unavailable
+    @ExceptionHandler(AiUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAiUnavailable(
+            AiUnavailableException ex, HttpServletRequest request) {
+
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), request, null);
+    }
 
     // Method commune
     private ResponseEntity<ErrorResponse> build(
