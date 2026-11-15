@@ -17,22 +17,31 @@ export class ApplicationApi {
     return this.http.get<Application[]>(`${API_URL}/applications`, { params });
   }
 
+  get(id: number): Observable<Application> {
+    return this.http.get<Application>(`${API_URL}/applications/${id}`);
+  }
+
   create(payload: ApplicationPayload): Observable<Application> {
     return this.http.post<Application>(`${API_URL}/applications`, payload);
+  }
+
+  update(id: number, payload: ApplicationPayload): Observable<Application> {
+    return this.http.put<Application>(`${API_URL}/applications/${id}`, payload);
   }
 
   updateStatus(id: number, status: ApplicationStatus): Observable<Application> {
     return this.http.patch<Application>(`${API_URL}/applications/${id}/status`, { status });
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${API_URL}/applications/${id}`);
-  }
   applyToOffer(jobOfferId: number, resumeId: number | null): Observable<Application> {
     return this.http.post<Application>(`${API_URL}/applications`, {
       jobOfferId,
       status: 'APPLIED',
       ...(resumeId ? { resumeId } : {}),
     });
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/applications/${id}`);
   }
 }

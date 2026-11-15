@@ -68,6 +68,8 @@
               </label>
             </td>
             <td class="actions">
+              <a class="edit" [routerLink]="['/applications', app.id, 'edit']"
+                 [attr.aria-label]="'Edit ' + app.jobTitle">Edit</a>
               <button type="button" class="delete" (click)="remove(app)"
                       [attr.aria-label]="'Delete ' + app.jobTitle">
                 Delete

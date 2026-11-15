@@ -32,12 +32,14 @@ export const STATUSES: { key: ApplicationStatus; label: string; color: string }[
   { key: 'REJECTED', label: 'Rejected', color: '#d64545' },
   { key: 'WITHDRAWN', label: 'Withdrawn', color: '#b8c2cd' },
 ];
+
 export interface ApplicationPayload {
   jobTitle: string;
   companyName: string;
   location?: string;
   jobUrl?: string;
   notes?: string;
+  coverLetter?: string;
   status: ApplicationStatus;
   resumeId?: number;
 }

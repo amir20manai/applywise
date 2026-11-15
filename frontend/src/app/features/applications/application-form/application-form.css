@@ -168,3 +168,6 @@ textarea:focus {
     padding: 20px;
   }
 }
+.muted {
+  color: #5b6b7c;
+}

@@ -12,9 +12,9 @@ import { Resumes } from './features/resumes/resumes';
 import { JobOffers } from './features/job-offers/job-offers';
 import { Interviews } from './features/interviews/interviews';
 import { Notifications } from './features/notifications/notifications';
+import { Profile } from './features/profile/profile';
 import { Companies } from './features/admin/companies/companies';
 import { ManageOffers } from './features/admin/manage-offers/manage-offers';
-import { Profile } from './features/profile/profile';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -26,15 +26,16 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: Dashboard },
       { path: 'applications/new', component: ApplicationForm },
+      { path: 'applications/:id/edit', component: ApplicationForm },
       { path: 'applications', component: Applications },
       { path: 'resumes', component: Resumes },
       { path: 'job-offers', component: JobOffers },
       { path: 'interviews', component: Interviews },
       { path: 'notifications', component: Notifications },
+      { path: 'profile', component: Profile },
       { path: 'admin/companies', component: Companies, canActivate: [adminGuard] },
       { path: 'admin/job-offers', component: ManageOffers, canActivate: [adminGuard] },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'profile', component: Profile },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
