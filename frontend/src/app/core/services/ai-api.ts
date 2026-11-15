@@ -3,7 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { API_URL } from '../config';
-import { CoverLetterPayload, CoverLetterResult } from '../models/ai.model';
+import {
+  CoverLetterPayload,
+  CoverLetterResult,
+  FollowUpPayload,
+  FollowUpResult,
+  InterviewPrepResult,
+  LetterLanguage,
+} from '../models/ai.model';
 
 @Injectable({ providedIn: 'root' })
 export class AiApi {
@@ -11,5 +18,20 @@ export class AiApi {
 
   coverLetter(payload: CoverLetterPayload): Observable<CoverLetterResult> {
     return this.http.post<CoverLetterResult>(`${API_URL}/ai/cover-letter`, payload);
+  }
+
+  prepareInterview(interviewId: number, language: LetterLanguage): Observable<InterviewPrepResult> {
+    return this.http.post<InterviewPrepResult>(
+      `${API_URL}/ai/interviews/${interviewId}/prepare`,
+      {},
+      { params: { language } },
+    );
+  }
+
+  followUp(applicationId: number, payload: FollowUpPayload): Observable<FollowUpResult> {
+    return this.http.post<FollowUpResult>(
+      `${API_URL}/ai/applications/${applicationId}/follow-up`,
+      payload,
+    );
   }
 }

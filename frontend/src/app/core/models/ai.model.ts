@@ -11,3 +11,19 @@ export interface CoverLetterPayload {
 export interface CoverLetterResult {
   text: string;
 }
+
+export interface InterviewPrepResult {
+  text: string;
+}
+
+export type FollowUpPurpose = 'follow_up' | 'thank_you';
+
+export interface FollowUpPayload {
+  purpose: FollowUpPurpose;
+  language: LetterLanguage;
+  details?: string;
+}
+
+export interface FollowUpResult {
+  text: string;
+}

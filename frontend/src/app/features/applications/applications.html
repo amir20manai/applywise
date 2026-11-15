@@ -68,6 +68,10 @@
               </label>
             </td>
             <td class="actions">
+              <button type="button" class="mail-open" [attr.aria-expanded]="mailFor() === app.id"
+                      (click)="toggleMail(app)">
+                Write email
+              </button>
               <a class="edit" [routerLink]="['/applications', app.id, 'edit']"
                  [attr.aria-label]="'Edit ' + app.jobTitle">Edit</a>
               <button type="button" class="delete" (click)="remove(app)"
@@ -76,6 +80,81 @@
               </button>
             </td>
           </tr>
+
+          @if (mailFor() === app.id) {
+            <tr class="mail-row">
+              <td colspan="6">
+                <section class="mail" [attr.aria-label]="'Email for ' + app.jobTitle">
+                  <div class="mail-head">
+                    <strong>Write an email with AI</strong>
+                    <button type="button" class="link" (click)="toggleMail(app)">Close</button>
+                  </div>
+                  <p class="mail-note">
+                    Only your name, the job title, the company, the status and the text below are
+                    sent. Your CV, email and phone number are not.
+                  </p>
+
+                  <div class="mail-grid">
+                    <div class="mail-field">
+                      <label [for]="'purpose-' + app.id">Type of email</label>
+                      <select [id]="'purpose-' + app.id" [value]="mailPurpose()"
+                              (change)="setMailPurpose($event)">
+                        <option value="follow_up">Follow-up (no answer yet)</option>
+                        <option value="thank_you">Thank you (after an interview)</option>
+                      </select>
+                    </div>
+
+                    <div class="mail-field">
+                      <label [for]="'language-' + app.id">Language</label>
+                      <select [id]="'language-' + app.id" [value]="mailLanguage()"
+                              (change)="setMailLanguage($event)">
+                        <option value="en">English</option>
+                        <option value="fr">French</option>
+                      </select>
+                    </div>
+
+                    <div class="mail-field wide">
+                      <label [for]="'details-' + app.id">Anything to mention? (optional)</label>
+                      <textarea [id]="'details-' + app.id" rows="3" maxlength="1000"
+                                placeholder="Recruiter name, a topic from the interview, your availability..."
+                                [value]="mailDetails()" (input)="setMailDetails($event)"></textarea>
+                    </div>
+                  </div>
+
+                  @if (mailError()) {
+                    <div class="alert" role="alert">{{ mailError() }}</div>
+                  }
+
+                  <div class="mail-actions">
+                    <button type="button" class="mail-btn primary" [disabled]="mailLoading()"
+                            (click)="generateMail(app)">
+                      {{ mailLoading() ? 'Writing...' : mailText() ? 'Write again' : 'Write email' }}
+                    </button>
+                    @if (mailLoading()) {
+                      <span class="mail-wait" role="status">This can take a few seconds.</span>
+                    }
+                  </div>
+
+                  @if (mailText()) {
+                    <label class="sr-only" [for]="'text-' + app.id">Email text</label>
+                    <textarea class="mail-text" [id]="'text-' + app.id" rows="10"
+                              [value]="mailText()" (input)="setMailText($event)"></textarea>
+
+                    <div class="mail-actions">
+                      <button type="button" class="mail-btn" (click)="copyMail()">
+                        {{ copied() ? 'Copied' : 'Copy' }}
+                      </button>
+                      <a class="mail-btn" [href]="mailto()">Open in your email app</a>
+                    </div>
+
+                    <p class="mail-note">
+                      Written by AI. Read it, fix the names and the facts, then send it yourself.
+                    </p>
+                  }
+                </section>
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>

@@ -1,12 +1,14 @@
-
 package com.applywise.backend.repository;
 
 import com.applywise.backend.entity.Interview;
 import com.applywise.backend.entity.InterviewStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.time.LocalDateTime;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
@@ -21,4 +23,11 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
             LocalDateTime from,
             LocalDateTime to
     );
+
+    // Charge l'entretien avec sa candidature et son utilisateur en une seule requête
+    @Query("select i from Interview i "
+            + "join fetch i.application a "
+            + "join fetch a.user "
+            + "where i.id = :id")
+    Optional<Interview> findWithApplicationAndUserById(@Param("id") Long id);
 }

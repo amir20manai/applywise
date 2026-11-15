@@ -1,9 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { ApplicationApi } from '../../core/services/application-api';
+import { AiApi } from '../../core/services/ai-api';
 import { Application, ApplicationStatus, STATUSES } from '../../core/models/application.model';
+import { FollowUpPurpose, LetterLanguage } from '../../core/models/ai.model';
 
 @Component({
   selector: 'app-applications',
@@ -13,12 +15,35 @@ import { Application, ApplicationStatus, STATUSES } from '../../core/models/appl
 })
 export class Applications implements OnInit {
   private api = inject(ApplicationApi);
+  private ai = inject(AiApi);
 
   statuses = STATUSES;
   items = signal<Application[]>([]);
   filter = signal<ApplicationStatus | null>(null);
   loading = signal(true);
   error = signal('');
+
+  // Assistant email (relance / remerciement)
+  mailFor = signal<number | null>(null);
+  mailPurpose = signal<FollowUpPurpose>('follow_up');
+  mailLanguage = signal<LetterLanguage>('en');
+  mailDetails = signal('');
+  mailText = signal('');
+  mailLoading = signal(false);
+  mailError = signal('');
+  copied = signal(false);
+
+  // Lien "mailto:" avec le sujet et le texte du mail généré
+  mailto = computed(() => {
+    const text = this.mailText().trim();
+    if (!text) return '';
+
+    const match = text.match(/^Subject:[ \t]*(.*)(?:\r?\n|$)/i);
+    const subject = match ? match[1].trim() : '';
+    const body = match ? text.slice(match[0].length).trim() : text;
+
+    return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  });
 
   ngOnInit(): void {
     this.load();
@@ -52,16 +77,93 @@ export class Applications implements OnInit {
       },
     });
   }
+
   remove(app: Application): void {
     if (!confirm(`Delete "${app.jobTitle}" at ${app.companyName}?`)) {
       return;
     }
 
     this.api.delete(app.id).subscribe({
-      next: () => this.items.update((list) => list.filter((a) => a.id !== app.id)),
+      next: () => {
+        this.items.update((list) => list.filter((a) => a.id !== app.id));
+        if (this.mailFor() === app.id) {
+          this.mailFor.set(null);
+        }
+      },
       error: (err) =>
         this.error.set(err.error?.message ?? 'Could not delete the application. Try again.'),
     });
+  }
+
+  // ---------- Assistant email ----------
+
+  toggleMail(app: Application): void {
+    if (this.mailFor() === app.id) {
+      this.mailFor.set(null);
+      return;
+    }
+
+    this.mailFor.set(app.id);
+    // Après un entretien on propose un remerciement, sinon une relance
+    this.mailPurpose.set(app.status === 'INTERVIEW' ? 'thank_you' : 'follow_up');
+    this.mailDetails.set('');
+    this.mailText.set('');
+    this.mailError.set('');
+    this.copied.set(false);
+  }
+
+  setMailPurpose(event: Event): void {
+    this.mailPurpose.set((event.target as HTMLSelectElement).value as FollowUpPurpose);
+  }
+
+  setMailLanguage(event: Event): void {
+    this.mailLanguage.set((event.target as HTMLSelectElement).value as LetterLanguage);
+  }
+
+  setMailDetails(event: Event): void {
+    this.mailDetails.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  setMailText(event: Event): void {
+    this.mailText.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  generateMail(app: Application): void {
+    this.mailError.set('');
+    this.copied.set(false);
+    this.mailLoading.set(true);
+
+    this.ai
+      .followUp(app.id, {
+        purpose: this.mailPurpose(),
+        language: this.mailLanguage(),
+        details: this.mailDetails().trim() || undefined,
+      })
+      .subscribe({
+        next: (result) => {
+          this.mailText.set(result.text);
+          this.mailLoading.set(false);
+        },
+        error: (err) => {
+          this.mailLoading.set(false);
+          const details = err.error?.validationErrors;
+          this.mailError.set(
+            details
+              ? Object.values(details).join(' ')
+              : (err.error?.message ?? 'Could not write the email. Try again.'),
+          );
+        },
+      });
+  }
+
+  async copyMail(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.mailText());
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2500);
+    } catch {
+      this.mailError.set('Could not copy. Select the text and copy it yourself.');
+    }
   }
 
   private load(): void {

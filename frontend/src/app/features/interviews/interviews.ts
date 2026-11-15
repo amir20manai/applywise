@@ -5,7 +5,9 @@ import { RouterLink } from '@angular/router';
 
 import { InterviewApi } from '../../core/services/interview-api';
 import { ApplicationApi } from '../../core/services/application-api';
+import { AiApi } from '../../core/services/ai-api';
 import { Application } from '../../core/models/application.model';
+import { LetterLanguage } from '../../core/models/ai.model';
 import {
   INTERVIEW_STATUSES,
   Interview,
@@ -22,6 +24,7 @@ export class Interviews implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(InterviewApi);
   private applicationsApi = inject(ApplicationApi);
+  private ai = inject(AiApi);
 
   statuses = INTERVIEW_STATUSES;
   items = signal<Interview[]>([]);
@@ -30,6 +33,12 @@ export class Interviews implements OnInit {
   loading = signal(true);
   saving = signal(false);
   error = signal('');
+
+  // Préparation d'entretien par l'IA
+  prepLanguage = signal<LetterLanguage>('en');
+  prepLoadingId = signal<number | null>(null);
+  prepResults = signal<Record<number, string>>({});
+  prepError = signal('');
 
   form = this.fb.nonNullable.group({
     applicationId: [null as number | null, Validators.required],
@@ -125,8 +134,41 @@ export class Interviews implements OnInit {
     if (!confirm(`Delete "${interview.title}" at ${interview.companyName}?`)) return;
 
     this.api.delete(interview.id).subscribe({
-      next: () => this.items.update((list) => list.filter((i) => i.id !== interview.id)),
+      next: () => {
+        this.items.update((list) => list.filter((i) => i.id !== interview.id));
+        this.hidePrep(interview.id);
+      },
       error: (err) => this.error.set(err.error?.message ?? 'Could not delete the interview.'),
+    });
+  }
+
+  setPrepLanguage(event: Event): void {
+    this.prepLanguage.set((event.target as HTMLSelectElement).value as LetterLanguage);
+  }
+
+  prepare(interview: Interview): void {
+    this.prepError.set('');
+    this.prepLoadingId.set(interview.id);
+
+    this.ai.prepareInterview(interview.id, this.prepLanguage()).subscribe({
+      next: (result) => {
+        this.prepResults.update((map) => ({ ...map, [interview.id]: result.text }));
+        this.prepLoadingId.set(null);
+      },
+      error: (err) => {
+        this.prepLoadingId.set(null);
+        this.prepError.set(
+          err.error?.message ?? 'Could not prepare this interview. Try again.',
+        );
+      },
+    });
+  }
+
+  hidePrep(id: number): void {
+    this.prepResults.update((map) => {
+      const next = { ...map };
+      delete next[id];
+      return next;
     });
   }
 

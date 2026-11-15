@@ -3,11 +3,25 @@
     <h1>Interviews</h1>
     <p>Keep every interview date, place and link in one list.</p>
   </div>
-  <button type="button" class="primary" (click)="openForm()">Add interview</button>
+
+  <div class="head-actions">
+    <label class="lang">
+      Prep language
+      <select [value]="prepLanguage()" (change)="setPrepLanguage($event)">
+        <option value="en">English</option>
+        <option value="fr">French</option>
+      </select>
+    </label>
+    <button type="button" class="primary" (click)="openForm()">Add interview</button>
+  </div>
 </header>
 
 @if (error()) {
   <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (prepError()) {
+  <div class="alert" role="alert">{{ prepError() }}</div>
 }
 
 @if (showForm()) {
@@ -125,8 +139,34 @@
               }
             </select>
           </label>
+
+          <button type="button" class="prepare"
+                  [disabled]="prepLoadingId() !== null"
+                  (click)="prepare(i)">
+            {{ prepLoadingId() === i.id ? 'Preparing...' : 'Prepare with AI' }}
+          </button>
+
           <button type="button" class="delete" (click)="remove(i)">Delete</button>
         </div>
+
+        @if (prepLoadingId() === i.id) {
+          <p class="prep-wait" role="status">
+            Preparing your questions. This can take a minute or two.
+          </p>
+        }
+
+        @if (prepResults()[i.id]; as text) {
+          <section class="prep" [attr.aria-label]="'Preparation for ' + i.title">
+            <div class="prep-head">
+              <strong>Interview preparation</strong>
+              <button type="button" (click)="hidePrep(i.id)">Hide</button>
+            </div>
+            <p class="prep-text">{{ text }}</p>
+            <p class="prep-note">
+              Written by AI from the job title, the company and your notes. Check it before you rely on it.
+            </p>
+          </section>
+        }
       </li>
     }
   </ul>

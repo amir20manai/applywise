@@ -5,14 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.time.Duration;
-
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +19,10 @@ import java.util.Map;
 public class GeminiService {
 
     private static final Logger log = LoggerFactory.getLogger(GeminiService.class);
+
+    // Erreurs temporaires côté Google: on réessaie automatiquement
+    private static final int MAX_ATTEMPTS = 3;
+    private static final long PAUSE_STEP_MS = 3000;
 
     private final RestClient client;
     private final String apiKey;
@@ -32,6 +35,7 @@ public class GeminiService {
 
         this.apiKey = apiKey;
         this.model = model;
+
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(10));
         factory.setReadTimeout(Duration.ofSeconds(120));
@@ -43,7 +47,6 @@ public class GeminiService {
     }
 
     // Envoie un prompt à Gemini et retourne le texte généré
-    @SuppressWarnings("unchecked")
     public String generate(String systemPrompt, String userPrompt) {
 
         if (apiKey == null || apiKey.isBlank()) {
@@ -59,30 +62,62 @@ public class GeminiService {
                 "generationConfig", Map.of("temperature", 0.7, "maxOutputTokens", 4096)
         );
 
-        try {
-            Map<String, Object> response = client.post()
-                    .uri("/v1beta/models/{model}:generateContent", model)
-                    .header("x-goog-api-key", apiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(Map.class);
+        int attempt = 0;
 
-            return extractText(response);
+        while (true) {
+            attempt++;
 
-        } catch (RestClientResponseException e) {
-            int status = e.getStatusCode().value();
-            log.warn("Gemini returned {}: {}", status, e.getResponseBodyAsString());
+            try {
+                Map<String, Object> response = client.post()
+                        .uri("/v1beta/models/{model}:generateContent", model)
+                        .header("x-goog-api-key", apiKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(body)
+                        .retrieve()
+                        .body(Map.class);
 
-            if (status == 429) {
+                return extractText(response);
+
+            } catch (RestClientResponseException e) {
+                int status = e.getStatusCode().value();
+                log.warn("Gemini returned {} (attempt {}/{}): {}",
+                        status, attempt, MAX_ATTEMPTS, e.getResponseBodyAsString());
+
+                if (status == 429) {
+                    throw new AiUnavailableException(
+                            "The AI limit is reached for now. Try again in a minute.");
+                }
+
+                if (isTemporary(status)) {
+                    if (attempt < MAX_ATTEMPTS) {
+                        pause(PAUSE_STEP_MS * attempt);
+                        continue;
+                    }
+                    throw new AiUnavailableException(
+                            "The AI is very busy right now. Try again in a minute.");
+                }
+
                 throw new AiUnavailableException(
-                        "The AI limit is reached for now. Try again in a minute.");
-            }
-            throw new AiUnavailableException("The AI service could not answer. Try again later.");
+                        "The AI service could not answer. Try again later.");
 
-        } catch (RestClientException e) {
-            log.warn("Could not reach Gemini: {}", e.getMessage());
-            throw new AiUnavailableException("The AI service is not reachable. Try again later.");
+            } catch (RestClientException e) {
+                log.warn("Could not reach Gemini: {}", e.getMessage());
+                throw new AiUnavailableException(
+                        "The AI service is not reachable. Try again later.");
+            }
+        }
+    }
+
+    private boolean isTemporary(int status) {
+        return status == 500 || status == 502 || status == 503 || status == 504;
+    }
+
+    private void pause(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AiUnavailableException("The request was interrupted. Try again.");
         }
     }
 
