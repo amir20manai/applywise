@@ -34,7 +34,7 @@ public class GeminiService {
         this.model = model;
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(10));
-        factory.setReadTimeout(Duration.ofSeconds(45));
+        factory.setReadTimeout(Duration.ofSeconds(120));
 
         this.client = RestClient.builder()
                 .baseUrl(baseUrl)
@@ -56,7 +56,7 @@ public class GeminiService {
                         "role", "user",
                         "parts", List.of(Map.of("text", userPrompt))
                 )),
-                "generationConfig", Map.of("temperature", 0.7, "maxOutputTokens", 2048)
+                "generationConfig", Map.of("temperature", 0.7, "maxOutputTokens", 4096)
         );
 
         try {
