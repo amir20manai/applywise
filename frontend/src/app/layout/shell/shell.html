@@ -1,0 +1,31 @@
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/dashboard">ApplyWise</a>
+
+        <nav class="nav" aria-label="Main">
+      @for (item of nav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active">
+          {{ item.label }}
+          @if (item.path === '/notifications' && notifications.unread() > 0) {
+            <span class="badge" [attr.aria-label]="notifications.unread() + ' unread'">
+              {{ notifications.unread() }}
+            </span>
+          }
+        </a>
+      }
+    </nav>
+
+    <div class="account">
+      <span class="avatar" aria-hidden="true">{{ initial }}</span>
+      <div class="account-info">
+        <strong>{{ auth.user()?.firstName }} {{ auth.user()?.lastName }}</strong>
+        <span>{{ auth.user()?.role | titlecase }}</span>
+      </div>
+      <button type="button" class="signout" (click)="auth.logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

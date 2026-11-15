@@ -1,0 +1,121 @@
+<header class="head">
+  <div>
+    <h1>Companies</h1>
+    <p>Every job offer belongs to a company. Add the company first.</p>
+  </div>
+  <button type="button" class="primary" (click)="openCreate()">Add company</button>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (notice()) {
+  <div class="notice" role="status">{{ notice() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2>{{ editingId() === null ? 'New company' : 'Edit company' }}</h2>
+
+    <div class="row">
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" type="text" formControlName="name" placeholder="Vermeg"
+               [class.invalid]="f.name.touched && f.name.invalid" />
+        @if (f.name.touched && f.name.invalid) {
+          <span class="field-error">Enter the company name.</span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">Contact email (optional)</label>
+        <input id="email" type="email" formControlName="email" placeholder="jobs@company.com"
+               [class.invalid]="f.email.touched && f.email.invalid" />
+        @if (f.email.touched && f.email.invalid) {
+          <span class="field-error">Enter a valid email address.</span>
+        }
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="industry">Industry</label>
+        <input id="industry" type="text" formControlName="industry" placeholder="Software" />
+      </div>
+
+      <div class="field">
+        <label for="location">Location</label>
+        <input id="location" type="text" formControlName="location" placeholder="Tunis" />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="website">Website</label>
+        <input id="website" type="url" formControlName="website" placeholder="https://" />
+      </div>
+
+      <div class="field">
+        <label for="logo">Logo link</label>
+        <input id="logo" type="url" formControlName="logo" placeholder="https://" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" rows="3" formControlName="description"
+                [class.invalid]="f.description.invalid"></textarea>
+      @if (f.description.invalid) {
+        <span class="field-error">The description can have up to 2000 characters.</span>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="primary" [disabled]="saving()">
+        {{ saving() ? 'Saving...' : 'Save company' }}
+      </button>
+      <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <p class="muted">Loading companies...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    <p>No company yet.</p>
+    <p class="hint">Add your first company, then publish its job offers.</p>
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Company</th>
+          <th scope="col">Industry</th>
+          <th scope="col">Location</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of items(); track c.id) {
+          <tr>
+            <td>
+              <strong>{{ c.name }}</strong>
+              @if (c.website) {
+                <a class="sub" [href]="c.website" target="_blank" rel="noopener">{{ c.website }}</a>
+              }
+            </td>
+            <td>{{ c.industry || '-' }}</td>
+            <td>{{ c.location || '-' }}</td>
+            <td class="actions">
+              <button type="button" (click)="openEdit(c)">Edit</button>
+              <button type="button" class="delete" (click)="remove(c)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,82 @@
+<header class="head">
+  <h1>Job offers</h1>
+  <p>Browse open roles and apply with your default CV.</p>
+</header>
+
+<form class="search" [formGroup]="search" (ngSubmit)="submitSearch()">
+  <div class="field">
+    <label for="title">Job title</label>
+    <input id="title" type="search" formControlName="title" placeholder="Java Developer" />
+  </div>
+  <div class="field">
+    <label for="location">Location</label>
+    <input id="location" type="search" formControlName="location" placeholder="Tunis" />
+  </div>
+  <button type="submit" class="primary">Search</button>
+  <button type="button" class="ghost" (click)="clearSearch()">Clear</button>
+</form>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (notice()) {
+  <div class="notice" role="status">
+    {{ notice() }} <a routerLink="/applications">View your applications</a>
+  </div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading job offers...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    <p>No open offer matches your search.</p>
+    <p class="hint">Try a shorter title or clear the location.</p>
+  </div>
+} @else {
+  <ul class="list">
+    @for (offer of items(); track offer.id) {
+      <li class="offer">
+        <div class="main">
+          <div class="info">
+            <strong>{{ offer.title }}</strong>
+            <span class="sub">
+              {{ offer.companyName || 'Company not listed' }}@if (offer.location) {, {{ offer.location }}}
+            </span>
+            <span class="meta">
+              @if (offer.employmentType) { <span>{{ offer.employmentType }}</span> }
+              @if (offer.experienceLevel) { <span>{{ offer.experienceLevel }}</span> }
+              @if (offer.salary) { <span>{{ offer.salary }}</span> }
+              @if (offer.deadline) { <span>Apply before {{ offer.deadline | date: 'd MMM y' }}</span> }
+            </span>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="ghost" [attr.aria-expanded]="expandedId() === offer.id"
+                    (click)="toggle(offer.id)">
+              {{ expandedId() === offer.id ? 'Hide details' : 'Details' }}
+            </button>
+
+            @if (appliedIds().has(offer.id)) {
+              <span class="applied">Applied</span>
+            } @else {
+              <button type="button" class="primary" [disabled]="applyingId() === offer.id"
+                      (click)="apply(offer)">
+                {{ applyingId() === offer.id ? 'Applying...' : 'Apply' }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (expandedId() === offer.id) {
+          <div class="details">
+            <p>{{ offer.description || 'No description provided.' }}</p>
+            @if (offer.sourceUrl) {
+              <a [href]="offer.sourceUrl" target="_blank" rel="noopener">Open the original post</a>
+            }
+          </div>
+        }
+      </li>
+    }
+  </ul>
+}

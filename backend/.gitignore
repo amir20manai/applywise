@@ -1,0 +1,15 @@
+# Maven
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Uploaded files (CVs)
+uploads/
+
+# Postman local
+.postman/
+
+# OS
+Thumbs.db

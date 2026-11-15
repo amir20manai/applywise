@@ -1,0 +1,133 @@
+<header class="head">
+  <div>
+    <h1>Interviews</h1>
+    <p>Keep every interview date, place and link in one list.</p>
+  </div>
+  <button type="button" class="primary" (click)="openForm()">Add interview</button>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2>New interview</h2>
+
+    @if (applications().length === 0) {
+      <p class="hint">
+        An interview belongs to an application.
+        <a routerLink="/applications/new">Add an application</a> first.
+      </p>
+    } @else {
+      <div class="field">
+        <label for="applicationId">Application</label>
+        <select id="applicationId" formControlName="applicationId"
+                [class.invalid]="f.applicationId.touched && f.applicationId.invalid">
+          <option [ngValue]="null">Choose an application</option>
+          @for (a of applications(); track a.id) {
+            <option [ngValue]="a.id">{{ a.jobTitle }} at {{ a.companyName }}</option>
+          }
+        </select>
+        @if (f.applicationId.touched && f.applicationId.invalid) {
+          <span class="field-error">Choose the application this interview belongs to.</span>
+        }
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" type="text" formControlName="title"
+                 placeholder="Technical interview"
+                 [class.invalid]="f.title.touched && f.title.invalid" />
+          @if (f.title.touched && f.title.invalid) {
+            <span class="field-error">Enter a title.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="scheduledAt">Date and time</label>
+          <input id="scheduledAt" type="datetime-local" formControlName="scheduledAt" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="location">Location</label>
+          <input id="location" type="text" formControlName="location"
+                 placeholder="Office in Lac 2, Tunis" />
+        </div>
+
+        <div class="field">
+          <label for="meetingLink">Meeting link</label>
+          <input id="meetingLink" type="url" formControlName="meetingLink"
+                 placeholder="https://meet.google.com/..." />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Notes</label>
+        <textarea id="notes" rows="3" formControlName="notes"
+                  placeholder="Who you meet, what to prepare..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="primary" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Save interview' }}
+        </button>
+        <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+      </div>
+    }
+  </form>
+}
+
+@if (loading()) {
+  <p class="muted">Loading your interviews...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    <p>You have no interview yet.</p>
+    <p class="hint">Add one as soon as a recruiter gives you a date.</p>
+  </div>
+} @else {
+  <ul class="list">
+    @for (i of items(); track i.id) {
+      <li class="item">
+        <div class="when">
+          @if (i.scheduledAt) {
+            <strong>{{ i.scheduledAt | date: 'd MMM' }}</strong>
+            <span>{{ i.scheduledAt | date: 'HH:mm' }}</span>
+          } @else {
+            <span>No date yet</span>
+          }
+        </div>
+
+        <div class="info">
+          <strong>{{ i.title }}</strong>
+          <span class="sub">{{ i.jobTitle }} at {{ i.companyName }}</span>
+          <span class="where">
+            @if (i.location) { <span>{{ i.location }}</span> }
+            @if (i.meetingLink) {
+              <a [href]="i.meetingLink" target="_blank" rel="noopener">Open meeting link</a>
+            }
+          </span>
+          @if (i.notes) {
+            <p class="notes">{{ i.notes }}</p>
+          }
+        </div>
+
+        <div class="actions">
+          <label class="status">
+            <span class="dot" [style.background]="color(i.status)"></span>
+            <select [value]="i.status" (change)="changeStatus(i, $event)"
+                    [attr.aria-label]="'Status of ' + i.title">
+              @for (s of statuses; track s.key) {
+                <option [value]="s.key" [selected]="s.key === i.status">{{ s.label }}</option>
+              }
+            </select>
+          </label>
+          <button type="button" class="delete" (click)="remove(i)">Delete</button>
+        </div>
+      </li>
+    }
+  </ul>
+}

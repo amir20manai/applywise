@@ -1,0 +1,160 @@
+<header class="head">
+  <div>
+    <h1>Manage job offers</h1>
+    <p>Publish the roles candidates can apply to.</p>
+  </div>
+  <button type="button" class="primary" (click)="openCreate()">Add offer</button>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (notice()) {
+  <div class="notice" role="status">{{ notice() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2>{{ editingId() === null ? 'New job offer' : 'Edit job offer' }}</h2>
+
+    @if (companies().length === 0) {
+      <p class="hint">
+        An offer belongs to a company. <a routerLink="/admin/companies">Add a company</a> first.
+      </p>
+    } @else {
+      <div class="row">
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" type="text" formControlName="title" placeholder="Java Developer"
+                 [class.invalid]="f.title.touched && f.title.invalid" />
+          @if (f.title.touched && f.title.invalid) {
+            <span class="field-error">Enter the job title.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="companyId">Company</label>
+          <select id="companyId" formControlName="companyId"
+                  [class.invalid]="f.companyId.touched && f.companyId.invalid">
+            <option [ngValue]="null">Choose a company</option>
+            @for (c of companies(); track c.id) {
+              <option [ngValue]="c.id">{{ c.name }}</option>
+            }
+          </select>
+          @if (f.companyId.touched && f.companyId.invalid) {
+            <span class="field-error">Choose the company that publishes this offer.</span>
+          }
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="location">Location</label>
+          <input id="location" type="text" formControlName="location" placeholder="Tunis" />
+        </div>
+
+        <div class="field">
+          <label for="deadline">Apply before</label>
+          <input id="deadline" type="datetime-local" formControlName="deadline" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="employmentType">Contract</label>
+          <input id="employmentType" type="text" formControlName="employmentType"
+                 list="contracts" placeholder="CDI" />
+          <datalist id="contracts">
+            <option value="CDI"></option>
+            <option value="CDD"></option>
+            <option value="Internship"></option>
+            <option value="Freelance"></option>
+            <option value="Part-time"></option>
+          </datalist>
+        </div>
+
+        <div class="field">
+          <label for="experienceLevel">Experience</label>
+          <input id="experienceLevel" type="text" formControlName="experienceLevel"
+                 list="levels" placeholder="Junior" />
+          <datalist id="levels">
+            <option value="Entry level"></option>
+            <option value="Junior"></option>
+            <option value="Mid-level"></option>
+            <option value="Senior"></option>
+          </datalist>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="salary">Salary</label>
+          <input id="salary" type="text" formControlName="salary" placeholder="1800 TND" />
+        </div>
+
+        <div class="field">
+          <label for="sourceUrl">Link to the original post</label>
+          <input id="sourceUrl" type="url" formControlName="sourceUrl" placeholder="https://" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" rows="5" formControlName="description"
+                  placeholder="Missions, required skills, benefits..."
+                  [class.invalid]="f.description.invalid"></textarea>
+        @if (f.description.invalid) {
+          <span class="field-error">The description can have up to 3000 characters.</span>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="primary" [disabled]="saving()">
+          {{ saving() ? 'Saving...' : 'Save offer' }}
+        </button>
+        <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+      </div>
+    }
+  </form>
+}
+
+@if (loading()) {
+  <p class="muted">Loading job offers...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    <p>No open offer yet.</p>
+    <p class="hint">Add an offer and candidates will see it in Job offers.</p>
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Offer</th>
+          <th scope="col">Location</th>
+          <th scope="col">Contract</th>
+          <th scope="col">Apply before</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of items(); track o.id) {
+          <tr>
+            <td>
+              <strong>{{ o.title }}</strong>
+              <span class="sub">{{ o.companyName || 'Company not listed' }}</span>
+            </td>
+            <td>{{ o.location || '-' }}</td>
+            <td>{{ o.employmentType || '-' }}</td>
+            <td>{{ o.deadline ? (o.deadline | date: 'd MMM y') : '-' }}</td>
+            <td class="actions">
+              <button type="button" (click)="openEdit(o)">Edit</button>
+              <button type="button" class="delete" (click)="remove(o)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

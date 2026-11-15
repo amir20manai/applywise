@@ -1,0 +1,53 @@
+<header class="head">
+  <h1>Hello {{ auth.user()?.firstName }}</h1>
+  <p>Here is where your job search stands today.</p>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (stats(); as s) {
+  <section class="figures">
+    <div class="figure">
+      <strong>{{ s.totalApplications }}</strong>
+      <span>Applications</span>
+    </div>
+    <div class="figure">
+      <strong>{{ s.upcomingInterviews }}</strong>
+      <span>Upcoming interviews</span>
+    </div>
+    <div class="figure">
+      <strong>{{ s.resumesCount }}</strong>
+      <span>CVs uploaded</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Applications by status</h2>
+
+    @if (s.totalApplications === 0) {
+      <p class="empty">
+        You have not added any application yet. Once you do, the breakdown appears here.
+      </p>
+    } @else {
+      <div class="bar" role="img" aria-label="Applications by status">
+        @for (seg of segments(); track seg.key) {
+          <span [style.width.%]="seg.percent" [style.background]="seg.color"></span>
+        }
+      </div>
+
+      <ul class="legend">
+        @for (row of rows(); track row.key) {
+          <li>
+            <span class="dot" [style.background]="row.color"></span>
+            <span class="name">{{ row.label }}</span>
+            <span class="count">{{ row.count }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @else if (loading()) {
+  <p class="muted">Loading your dashboard...</p>
+}

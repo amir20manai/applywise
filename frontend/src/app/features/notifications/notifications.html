@@ -1,0 +1,49 @@
+<header class="head">
+  <div>
+    <h1>Notifications</h1>
+    <p>Status changes and interview reminders show up here.</p>
+  </div>
+  <button type="button" class="ghost" [disabled]="unreadCount() === 0" (click)="markAllRead()">
+    Mark all as read
+  </button>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading your notifications...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    <p>You have no notification yet.</p>
+    <p class="hint">
+      You will get one when an application changes status, and a reminder the day before an interview.
+    </p>
+  </div>
+} @else {
+  <ul class="list">
+    @for (n of items(); track n.id) {
+      <li class="item" [class.unread]="!n.read">
+        <div class="body">
+          <div class="top">
+            <strong>{{ n.title }}</strong>
+            <span class="kind">{{ label(n.type) }}</span>
+          </div>
+          <p>{{ n.message }}</p>
+          <time class="time" [attr.datetime]="n.createdAt">{{ n.createdAt | date: 'd MMM y, HH:mm' }}</time>
+        </div>
+
+        <div class="actions">
+          @if (!n.read) {
+            <button type="button" (click)="markRead(n)">Mark as read</button>
+          }
+          <button type="button" class="delete" (click)="remove(n)"
+                  [attr.aria-label]="'Delete notification: ' + n.title">
+            Delete
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+}

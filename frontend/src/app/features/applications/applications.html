@@ -1,0 +1,81 @@
+<header class="head">
+  <div>
+    <h1>Applications</h1>
+    <p>Every role you applied to, and where it stands.</p>
+  </div>
+  <a class="add" routerLink="/applications/new">Add application</a>
+</header>
+
+<div class="filters" role="group" aria-label="Filter by status">
+  <button type="button" [class.on]="filter() === null" [attr.aria-pressed]="filter() === null"
+          (click)="setFilter(null)">
+    All
+  </button>
+  @for (s of statuses; track s.key) {
+    <button type="button" [class.on]="filter() === s.key" [attr.aria-pressed]="filter() === s.key"
+            (click)="setFilter(s.key)">
+      <span class="dot" [style.background]="s.color"></span>{{ s.label }}
+    </button>
+  }
+</div>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading your applications...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    @if (filter()) {
+      <p>No application with this status.</p>
+    } @else {
+      <p>You have not added any application yet.</p>
+    }
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Role</th>
+          <th scope="col">Location</th>
+          <th scope="col">Applied</th>
+          <th scope="col">CV</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (app of items(); track app.id) {
+          <tr>
+            <td>
+              <strong>{{ app.jobTitle }}</strong>
+              <span class="sub">{{ app.companyName }}</span>
+            </td>
+            <td>{{ app.location || '-' }}</td>
+            <td>{{ app.appliedAt | date: 'd MMM y' }}</td>
+            <td class="cv">{{ app.resumeFileName || '-' }}</td>
+            <td>
+              <label class="status">
+                <span class="dot" [style.background]="color(app.status)"></span>
+                <select [value]="app.status" (change)="changeStatus(app, $event)"
+                        [attr.aria-label]="'Status of ' + app.jobTitle">
+                  @for (s of statuses; track s.key) {
+                    <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
+                  }
+                </select>
+              </label>
+            </td>
+            <td class="actions">
+              <button type="button" class="delete" (click)="remove(app)"
+                      [attr.aria-label]="'Delete ' + app.jobTitle">
+                Delete
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
