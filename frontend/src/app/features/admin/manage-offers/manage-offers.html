@@ -99,10 +99,51 @@
         </div>
       </div>
 
+      <section class="ai-box" aria-labelledby="ai-title">
+        <h3 id="ai-title">Write the description with AI</h3>
+        <p class="ai-note">
+          Only the title, the company, the location and the keywords below are sent.
+        </p>
+
+        <div class="ai-row">
+          <div class="field">
+            <label for="aiKeywords">Skills, missions and points to mention (optional)</label>
+            <textarea id="aiKeywords" rows="3" formControlName="aiKeywords"
+                      placeholder="Spring Boot, REST APIs, MySQL, teamwork, hybrid work..."
+                      [class.invalid]="f.aiKeywords.invalid"></textarea>
+            @if (f.aiKeywords.invalid) {
+              <span class="field-error">Keep it under 1000 characters.</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="aiLanguage">Language</label>
+            <select id="aiLanguage" formControlName="aiLanguage">
+              <option value="en">English</option>
+              <option value="fr">French</option>
+            </select>
+          </div>
+        </div>
+
+        @if (aiError()) {
+          <div class="alert" role="alert">{{ aiError() }}</div>
+        }
+
+        <div class="ai-actions">
+          <button type="button" class="ai-btn" [disabled]="generating()"
+                  (click)="generateDescription()">
+            {{ generating() ? 'Writing...' : 'Generate description' }}
+          </button>
+          @if (generating()) {
+            <span class="ai-wait" role="status">This can take a few seconds.</span>
+          }
+        </div>
+      </section>
+
       <div class="field">
         <label for="description">Description</label>
-        <textarea id="description" rows="5" formControlName="description"
-                  placeholder="Missions, required skills, benefits..."
+        <textarea id="description" rows="10" formControlName="description"
+                  placeholder="Missions, required skills, benefits... or generate it above and edit it."
                   [class.invalid]="f.description.invalid"></textarea>
         @if (f.description.invalid) {
           <span class="field-error">The description can have up to 3000 characters.</span>

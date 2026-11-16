@@ -6,7 +6,9 @@ import { RouterLink } from '@angular/router';
 import { JobOfferApi } from '../../core/services/job-offer-api';
 import { ApplicationApi } from '../../core/services/application-api';
 import { ResumeApi } from '../../core/services/resume-api';
+import { AiApi } from '../../core/services/ai-api';
 import { JobOffer } from '../../core/models/job-offer.model';
+import { LetterLanguage } from '../../core/models/ai.model';
 
 @Component({
   selector: 'app-job-offers',
@@ -19,6 +21,7 @@ export class JobOffers implements OnInit {
   private offersApi = inject(JobOfferApi);
   private applicationsApi = inject(ApplicationApi);
   private resumeApi = inject(ResumeApi);
+  private ai = inject(AiApi);
 
   items = signal<JobOffer[]>([]);
   appliedIds = signal<Set<number>>(new Set());
@@ -28,6 +31,12 @@ export class JobOffers implements OnInit {
   loading = signal(true);
   error = signal('');
   notice = signal('');
+
+  // Résumé par l'IA
+  summaryLanguage = signal<LetterLanguage>('en');
+  summaryLoadingId = signal<number | null>(null);
+  summaries = signal<Record<number, string>>({});
+  summaryError = signal('');
 
   search = this.fb.nonNullable.group({
     title: [''],
@@ -79,6 +88,26 @@ export class JobOffers implements OnInit {
       error: (err) => {
         this.applyingId.set(null);
         this.error.set(err.error?.message ?? 'Could not apply to this offer. Try again.');
+      },
+    });
+  }
+
+  setSummaryLanguage(event: Event): void {
+    this.summaryLanguage.set((event.target as HTMLSelectElement).value as LetterLanguage);
+  }
+
+  summarize(offer: JobOffer): void {
+    this.summaryError.set('');
+    this.summaryLoadingId.set(offer.id);
+
+    this.ai.summarizeOffer(offer.id, this.summaryLanguage()).subscribe({
+      next: (result) => {
+        this.summaries.update((map) => ({ ...map, [offer.id]: result.text }));
+        this.summaryLoadingId.set(null);
+      },
+      error: (err) => {
+        this.summaryLoadingId.set(null);
+        this.summaryError.set(err.error?.message ?? 'Could not summarize this offer. Try again.');
       },
     });
   }

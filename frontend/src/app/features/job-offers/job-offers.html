@@ -20,6 +20,10 @@
   <div class="alert" role="alert">{{ error() }}</div>
 }
 
+@if (summaryError()) {
+  <div class="alert" role="alert">{{ summaryError() }}</div>
+}
+
 @if (notice()) {
   <div class="notice" role="status">
     {{ notice() }} <a routerLink="/applications">View your applications</a>
@@ -73,6 +77,44 @@
             <p>{{ offer.description || 'No description provided.' }}</p>
             @if (offer.sourceUrl) {
               <a [href]="offer.sourceUrl" target="_blank" rel="noopener">Open the original post</a>
+            }
+
+            @if (offer.description) {
+              <div class="summary-tools">
+                <label class="lang">
+                  Language
+                  <select [value]="summaryLanguage()" (change)="setSummaryLanguage($event)">
+                    <option value="en">English</option>
+                    <option value="fr">French</option>
+                  </select>
+                </label>
+
+                <button type="button" class="ghost ai"
+                        [disabled]="summaryLoadingId() !== null"
+                        (click)="summarize(offer)">
+                  {{
+                    summaryLoadingId() === offer.id
+                      ? 'Summarizing...'
+                      : summaries()[offer.id]
+                        ? 'Summarize again'
+                        : 'Summarize with AI'
+                  }}
+                </button>
+
+                @if (summaryLoadingId() === offer.id) {
+                  <span class="summary-wait" role="status">This can take a few seconds.</span>
+                }
+              </div>
+
+              @if (summaries()[offer.id]; as summary) {
+                <section class="summary" [attr.aria-label]="'AI summary of ' + offer.title">
+                  <strong>AI summary</strong>
+                  <p class="summary-text">{{ summary }}</p>
+                  <p class="summary-note">
+                    Written by AI from the description above. Check the original post before you apply.
+                  </p>
+                </section>
+              }
             }
           </div>
         }

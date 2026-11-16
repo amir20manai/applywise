@@ -4,12 +4,14 @@ import { Observable } from 'rxjs';
 
 import { API_URL } from '../config';
 import {
+  AiText,
   CoverLetterPayload,
   CoverLetterResult,
   FollowUpPayload,
   FollowUpResult,
   InterviewPrepResult,
   LetterLanguage,
+  OfferDescriptionPayload,
 } from '../models/ai.model';
 
 @Injectable({ providedIn: 'root' })
@@ -33,5 +35,17 @@ export class AiApi {
       `${API_URL}/ai/applications/${applicationId}/follow-up`,
       payload,
     );
+  }
+
+  summarizeOffer(offerId: number, language: LetterLanguage): Observable<AiText> {
+    return this.http.post<AiText>(
+      `${API_URL}/ai/job-offers/${offerId}/summary`,
+      {},
+      { params: { language } },
+    );
+  }
+
+  offerDescription(payload: OfferDescriptionPayload): Observable<AiText> {
+    return this.http.post<AiText>(`${API_URL}/ai/offer-description`, payload);
   }
 }

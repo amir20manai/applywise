@@ -5,8 +5,10 @@ import { RouterLink } from '@angular/router';
 
 import { JobOfferApi } from '../../../core/services/job-offer-api';
 import { CompanyApi } from '../../../core/services/company-api';
+import { AiApi } from '../../../core/services/ai-api';
 import { JobOffer } from '../../../core/models/job-offer.model';
 import { Company } from '../../../core/models/company.model';
+import { LetterLanguage } from '../../../core/models/ai.model';
 
 @Component({
   selector: 'app-manage-offers',
@@ -18,6 +20,7 @@ export class ManageOffers implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(JobOfferApi);
   private companyApi = inject(CompanyApi);
+  private ai = inject(AiApi);
 
   items = signal<JobOffer[]>([]);
   companies = signal<Company[]>([]);
@@ -27,6 +30,9 @@ export class ManageOffers implements OnInit {
   saving = signal(false);
   error = signal('');
   notice = signal('');
+
+  generating = signal(false);
+  aiError = signal('');
 
   form = this.fb.nonNullable.group({
     companyId: [null as number | null, Validators.required],
@@ -38,6 +44,9 @@ export class ManageOffers implements OnInit {
     deadline: [''],
     sourceUrl: [''],
     description: ['', Validators.maxLength(3000)],
+    // Champs de l'assistant IA (jamais envoyés à l'enregistrement)
+    aiKeywords: ['', Validators.maxLength(1000)],
+    aiLanguage: ['en' as LetterLanguage],
   });
 
   get f() {
@@ -61,8 +70,11 @@ export class ManageOffers implements OnInit {
       deadline: '',
       sourceUrl: '',
       description: '',
+      aiKeywords: '',
+      aiLanguage: 'en',
     });
     this.error.set('');
+    this.aiError.set('');
     this.notice.set('');
     this.showForm.set(true);
   }
@@ -80,8 +92,11 @@ export class ManageOffers implements OnInit {
       deadline: offer.deadline ? offer.deadline.slice(0, 16) : '',
       sourceUrl: offer.sourceUrl ?? '',
       description: offer.description ?? '',
+      aiKeywords: '',
+      aiLanguage: 'en',
     });
     this.error.set('');
+    this.aiError.set('');
     this.notice.set('');
     this.showForm.set(true);
   }
@@ -89,6 +104,56 @@ export class ManageOffers implements OnInit {
   closeForm(): void {
     this.showForm.set(false);
     this.editingId.set(null);
+  }
+
+  generateDescription(): void {
+    this.aiError.set('');
+
+    const v = this.form.getRawValue();
+    const title = v.title.trim();
+
+    if (!title) {
+      this.f.title.markAsTouched();
+      this.aiError.set('Enter the job title first.');
+      return;
+    }
+
+    if (this.f.aiKeywords.invalid) {
+      this.f.aiKeywords.markAsTouched();
+      return;
+    }
+
+    if (v.description.trim() && !confirm('Replace the description you already wrote?')) {
+      return;
+    }
+
+    const companyName = this.companies().find((c) => c.id === v.companyId)?.name;
+    this.generating.set(true);
+
+    this.ai
+      .offerDescription({
+        title,
+        companyName,
+        location: v.location.trim() || undefined,
+        keywords: v.aiKeywords.trim() || undefined,
+        language: v.aiLanguage,
+      })
+      .subscribe({
+        next: (result) => {
+          this.f.description.setValue(result.text.slice(0, 3000));
+          this.f.description.markAsDirty();
+          this.generating.set(false);
+        },
+        error: (err) => {
+          this.generating.set(false);
+          const details = err.error?.validationErrors;
+          this.aiError.set(
+            details
+              ? Object.values(details).join(' ')
+              : (err.error?.message ?? 'Could not write the description. Try again.'),
+          );
+        },
+      });
   }
 
   submit(): void {

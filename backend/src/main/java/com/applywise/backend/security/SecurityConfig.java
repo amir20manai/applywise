@@ -90,6 +90,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/companies/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/companies/**").hasRole("ADMIN")
 
+                        // AI: la description d'offre est réservée à l'ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/ai/offer-description").hasRole("ADMIN")
+
                         // Tout le reste: authentifié
                         .anyRequest().authenticated()
                 )

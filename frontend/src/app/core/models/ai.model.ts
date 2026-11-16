@@ -27,3 +27,15 @@ export interface FollowUpPayload {
 export interface FollowUpResult {
   text: string;
 }
+
+export interface AiText {
+  text: string;
+}
+
+export interface OfferDescriptionPayload {
+  title: string;
+  companyName?: string;
+  location?: string;
+  keywords?: string;
+  language: LetterLanguage;
+}
