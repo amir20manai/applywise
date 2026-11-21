@@ -1,9 +1,9 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>Companies</h1>
     <p>Every job offer belongs to a company. Add the company first.</p>
   </div>
-  <button type="button" class="primary" (click)="openCreate()">Add company</button>
+  <button type="button" class="btn btn-primary" (click)="openCreate()">Add company</button>
 </header>
 
 @if (error()) {
@@ -15,13 +15,13 @@
 }
 
 @if (showForm()) {
-  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <h2>{{ editingId() === null ? 'New company' : 'Edit company' }}</h2>
 
-    <div class="row">
+    <div class="field-row">
       <div class="field">
         <label for="name">Name</label>
-        <input id="name" type="text" formControlName="name" placeholder="Vermeg"
+        <input id="name" class="input" type="text" formControlName="name" placeholder="Vermeg"
                [class.invalid]="f.name.touched && f.name.invalid" />
         @if (f.name.touched && f.name.invalid) {
           <span class="field-error">Enter the company name.</span>
@@ -30,7 +30,7 @@
 
       <div class="field">
         <label for="email">Contact email (optional)</label>
-        <input id="email" type="email" formControlName="email" placeholder="jobs@company.com"
+        <input id="email" class="input" type="email" formControlName="email" placeholder="jobs@company.com"
                [class.invalid]="f.email.touched && f.email.invalid" />
         @if (f.email.touched && f.email.invalid) {
           <span class="field-error">Enter a valid email address.</span>
@@ -38,33 +38,33 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="field-row">
       <div class="field">
         <label for="industry">Industry</label>
-        <input id="industry" type="text" formControlName="industry" placeholder="Software" />
+        <input id="industry" class="input" type="text" formControlName="industry" placeholder="Software" />
       </div>
 
       <div class="field">
         <label for="location">Location</label>
-        <input id="location" type="text" formControlName="location" placeholder="Tunis" />
+        <input id="location" class="input" type="text" formControlName="location" placeholder="Tunis" />
       </div>
     </div>
 
-    <div class="row">
+    <div class="field-row">
       <div class="field">
         <label for="website">Website</label>
-        <input id="website" type="url" formControlName="website" placeholder="https://" />
+        <input id="website" class="input" type="url" formControlName="website" placeholder="https://" />
       </div>
 
       <div class="field">
         <label for="logo">Logo link</label>
-        <input id="logo" type="url" formControlName="logo" placeholder="https://" />
+        <input id="logo" class="input" type="url" formControlName="logo" placeholder="https://" />
       </div>
     </div>
 
     <div class="field">
       <label for="description">Description</label>
-      <textarea id="description" rows="3" formControlName="description"
+      <textarea id="description" class="input" rows="3" formControlName="description"
                 [class.invalid]="f.description.invalid"></textarea>
       @if (f.description.invalid) {
         <span class="field-error">The description can have up to 2000 characters.</span>
@@ -72,10 +72,10 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="primary" [disabled]="saving()">
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
         {{ saving() ? 'Saving...' : 'Save company' }}
       </button>
-      <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+      <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
     </div>
   </form>
 }
@@ -89,7 +89,7 @@
   </div>
 } @else {
   <div class="table-wrap">
-    <table>
+    <table class="data-table">
       <thead>
         <tr>
           <th scope="col">Company</th>
@@ -104,14 +104,16 @@
             <td>
               <strong>{{ c.name }}</strong>
               @if (c.website) {
-                <a class="sub" [href]="c.website" target="_blank" rel="noopener">{{ c.website }}</a>
+                <a class="cell-sub site" [href]="c.website" target="_blank" rel="noopener">{{ c.website }}</a>
               }
             </td>
             <td>{{ c.industry || '-' }}</td>
             <td>{{ c.location || '-' }}</td>
-            <td class="actions">
-              <button type="button" (click)="openEdit(c)">Edit</button>
-              <button type="button" class="delete" (click)="remove(c)">Delete</button>
+            <td>
+              <div class="cell-actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="openEdit(c)">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="remove(c)">Delete</button>
+              </div>
             </td>
           </tr>
         }

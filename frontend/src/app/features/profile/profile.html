@@ -1,12 +1,14 @@
-<header class="head">
-  <h1>Profile</h1>
-  <p>Your details and your password.</p>
+<header class="page-head">
+  <div>
+    <h1>Profile</h1>
+    <p>Your details and your password.</p>
+  </div>
 </header>
 
 @if (loading()) {
   <p class="muted">Loading your profile...</p>
 } @else {
-  <section class="card">
+  <section class="panel">
     <h2>Your details</h2>
 
     @if (profileError()) {
@@ -17,10 +19,11 @@
     }
 
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="firstName">First name</label>
-          <input id="firstName" type="text" formControlName="firstName" autocomplete="given-name"
+          <input id="firstName" class="input" type="text" formControlName="firstName"
+                 autocomplete="given-name"
                  [class.invalid]="p.firstName.touched && p.firstName.invalid" />
           @if (p.firstName.touched && p.firstName.invalid) {
             <span class="field-error">Enter your first name.</span>
@@ -29,7 +32,8 @@
 
         <div class="field">
           <label for="lastName">Last name</label>
-          <input id="lastName" type="text" formControlName="lastName" autocomplete="family-name"
+          <input id="lastName" class="input" type="text" formControlName="lastName"
+                 autocomplete="family-name"
                  [class.invalid]="p.lastName.touched && p.lastName.invalid" />
           @if (p.lastName.touched && p.lastName.invalid) {
             <span class="field-error">Enter your last name.</span>
@@ -37,16 +41,16 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="email">Email</label>
-          <input id="email" type="email" [value]="profile()?.email" readonly />
-          <span class="help">You sign in with this email, so it cannot be changed.</span>
+          <input id="email" class="input" type="email" [value]="profile()?.email" readonly />
+          <span class="field-help">You sign in with this email, so it cannot be changed.</span>
         </div>
 
         <div class="field">
           <label for="phone">Phone</label>
-          <input id="phone" type="tel" formControlName="phone" autocomplete="tel"
+          <input id="phone" class="input" type="tel" formControlName="phone" autocomplete="tel"
                  [class.invalid]="p.phone.touched && p.phone.invalid" />
           @if (p.phone.touched && p.phone.invalid) {
             <span class="field-error">The phone number is too long.</span>
@@ -58,13 +62,13 @@
         {{ profile()?.role | titlecase }} account, created {{ profile()?.createdAt | date: 'd MMM y' }}
       </p>
 
-      <button type="submit" class="primary" [disabled]="savingProfile()">
+      <button type="submit" class="btn btn-primary" [disabled]="savingProfile()">
         {{ savingProfile() ? 'Saving...' : 'Save changes' }}
       </button>
     </form>
   </section>
 
-  <section class="card">
+  <section class="panel">
     <h2>Change password</h2>
 
     @if (passwordError()) {
@@ -77,7 +81,7 @@
     <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" novalidate>
       <div class="field narrow">
         <label for="currentPassword">Current password</label>
-        <input id="currentPassword" type="password" formControlName="currentPassword"
+        <input id="currentPassword" class="input" type="password" formControlName="currentPassword"
                autocomplete="current-password"
                [class.invalid]="pw.currentPassword.touched && pw.currentPassword.invalid" />
         @if (pw.currentPassword.touched && pw.currentPassword.invalid) {
@@ -85,10 +89,10 @@
         }
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="newPassword">New password</label>
-          <input id="newPassword" type="password" formControlName="newPassword"
+          <input id="newPassword" class="input" type="password" formControlName="newPassword"
                  autocomplete="new-password"
                  [class.invalid]="pw.newPassword.touched && pw.newPassword.invalid" />
           @if (pw.newPassword.touched && pw.newPassword.invalid) {
@@ -98,7 +102,7 @@
 
         <div class="field">
           <label for="confirmPassword">Confirm new password</label>
-          <input id="confirmPassword" type="password" formControlName="confirmPassword"
+          <input id="confirmPassword" class="input" type="password" formControlName="confirmPassword"
                  autocomplete="new-password"
                  [class.invalid]="pw.confirmPassword.touched && passwordForm.hasError('mismatch')" />
           @if (pw.confirmPassword.touched && passwordForm.hasError('mismatch')) {
@@ -107,7 +111,7 @@
         </div>
       </div>
 
-      <button type="submit" class="primary" [disabled]="savingPassword()">
+      <button type="submit" class="btn btn-primary" [disabled]="savingPassword()">
         {{ savingPassword() ? 'Saving...' : 'Change password' }}
       </button>
     </form>

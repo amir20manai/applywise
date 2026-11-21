@@ -3,59 +3,8 @@
   max-width: 960px;
 }
 
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+.page-head {
   margin-bottom: 32px;
-}
-
-.head h1 {
-  margin: 0 0 6px;
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.head p {
-  margin: 0;
-  color: #5b6b7c;
-}
-
-.add {
-  flex-shrink: 0;
-  padding: 11px 20px;
-  font-weight: 600;
-  color: #ffffff;
-  background: #2457f5;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-
-.add:hover {
-  background: #1a44cc;
-}
-
-.add:focus-visible,
-a:focus-visible {
-  outline: 3px solid rgba(36, 87, 245, 0.35);
-  outline-offset: 2px;
-}
-
-.muted {
-  color: #5b6b7c;
-}
-
-.alert {
-  margin-bottom: 20px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #fdeceb;
-  border: 1px solid #f4c3bf;
-  color: #b42318;
-  font-size: 0.92rem;
 }
 
 /* ---------- Key figures ---------- */
@@ -63,9 +12,9 @@ a:focus-visible {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   margin-bottom: 20px;
-  background: #ffffff;
-  border: 1px solid #dfe5ec;
-  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
 }
 
 .figure {
@@ -73,7 +22,7 @@ a:focus-visible {
 }
 
 .figure + .figure {
-  border-left: 1px solid #dfe5ec;
+  border-left: 1px solid var(--line);
 }
 
 .figure strong {
@@ -85,23 +34,14 @@ a:focus-visible {
 }
 
 .figure span {
-  color: #5b6b7c;
+  color: var(--text-muted);
   font-size: 0.92rem;
 }
 
 /* ---------- Status breakdown ---------- */
-.panel {
+.breakdown {
   margin-bottom: 20px;
-  padding: 24px 26px 12px;
-  background: #ffffff;
-  border: 1px solid #dfe5ec;
-  border-radius: 12px;
-}
-
-.panel h2 {
-  margin: 0 0 18px;
-  font-size: 1.05rem;
-  font-weight: 600;
+  padding-bottom: 12px;
 }
 
 .bar {
@@ -109,9 +49,9 @@ a:focus-visible {
   gap: 2px;
   height: 14px;
   margin-bottom: 18px;
-  border-radius: 7px;
   overflow: hidden;
   background: #e8edf3;
+  border-radius: 7px;
 }
 
 .bar span {
@@ -120,9 +60,9 @@ a:focus-visible {
 }
 
 .legend {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .legend li {
@@ -137,8 +77,6 @@ a:focus-visible {
 .dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 .count {
@@ -150,13 +88,6 @@ a:focus-visible {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
-}
-
-.box {
-  padding: 22px 24px;
-  background: #ffffff;
-  border: 1px solid #dfe5ec;
-  border-radius: 12px;
 }
 
 .box-head {
@@ -172,36 +103,28 @@ a:focus-visible {
   font-weight: 600;
 }
 
-.box-head a,
-.empty-text a {
-  color: #2457f5;
+.box-head .text-link,
+.empty-text .text-link {
   font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.box-head a:hover,
-.empty-text a:hover {
-  text-decoration: underline;
 }
 
 .empty-text {
-  margin: 0 0 12px;
   max-width: 52ch;
-  color: #5b6b7c;
+  margin: 0 0 12px;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
 .error-text {
   margin: 0;
-  color: #b42318;
+  color: var(--danger);
   font-size: 0.92rem;
 }
 
 .rows {
-  list-style: none;
   margin: 0;
   padding: 0;
+  list-style: none;
 }
 
 .row-item {
@@ -213,8 +136,8 @@ a:focus-visible {
 }
 
 .row-item:first-child {
-  border-top: none;
   padding-top: 4px;
+  border-top: none;
 }
 
 .when {
@@ -229,7 +152,7 @@ a:focus-visible {
 }
 
 .when span {
-  color: #5b6b7c;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -240,32 +163,23 @@ a:focus-visible {
 
 .what strong {
   display: block;
-  font-weight: 600;
   overflow: hidden;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .what span {
   display: block;
-  color: #5b6b7c;
-  font-size: 0.88rem;
   overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.88rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pill {
-  display: inline-flex;
+.row-item .pill {
   flex-shrink: 0;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 11px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #34465a;
-  background: #eef2f7;
-  border-radius: 999px;
 }
 
 .pill .dot {
@@ -280,16 +194,12 @@ a:focus-visible {
 }
 
 @media (max-width: 640px) {
-  .head {
-    flex-direction: column;
-  }
-
   .figures {
     grid-template-columns: 1fr;
   }
 
   .figure + .figure {
+    border-top: 1px solid var(--line);
     border-left: none;
-    border-top: 1px solid #dfe5ec;
   }
 }

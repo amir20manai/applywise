@@ -1,9 +1,9 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>Hello {{ auth.user()?.firstName }}</h1>
     <p>Here is where your job search stands today.</p>
   </div>
-  <a class="add" routerLink="/applications/new">Add application</a>
+  <a class="btn btn-primary" routerLink="/applications/new">Add application</a>
 </header>
 
 @if (error()) {
@@ -26,7 +26,7 @@
     </div>
   </section>
 
-  <section class="panel">
+  <section class="panel breakdown">
     <h2>Applications by status</h2>
 
     @if (s.totalApplications === 0) {
@@ -44,7 +44,7 @@
         @for (row of rows(); track row.key) {
           <li>
             <span class="dot" [style.background]="row.color"></span>
-            <span class="name">{{ row.label }}</span>
+            <span>{{ row.label }}</span>
             <span class="count">{{ row.count }}</span>
           </li>
         }
@@ -56,10 +56,10 @@
 }
 
 <div class="columns">
-  <section class="box" aria-labelledby="upcoming-title">
+  <section class="panel" aria-labelledby="upcoming-title">
     <div class="box-head">
       <h2 id="upcoming-title">Upcoming interviews</h2>
-      <a routerLink="/interviews">View all</a>
+      <a class="text-link" routerLink="/interviews">View all</a>
     </div>
 
     @if (interviewsLoading()) {
@@ -69,7 +69,7 @@
     } @else if (upcoming().length === 0) {
       <p class="empty-text">
         No interview planned.
-        <a routerLink="/interviews">Add one</a> as soon as a recruiter gives you a date.
+        <a class="text-link" routerLink="/interviews">Add one</a> as soon as a recruiter gives you a date.
       </p>
     } @else {
       <ul class="rows">
@@ -89,10 +89,10 @@
     }
   </section>
 
-  <section class="box" aria-labelledby="recent-title">
+  <section class="panel" aria-labelledby="recent-title">
     <div class="box-head">
       <h2 id="recent-title">Recent applications</h2>
-      <a routerLink="/applications">View all</a>
+      <a class="text-link" routerLink="/applications">View all</a>
     </div>
 
     @if (applicationsLoading()) {
@@ -101,8 +101,8 @@
       <p class="error-text">{{ applicationsError() }}</p>
     } @else if (recent().length === 0) {
       <p class="empty-text">
-        Nothing here yet. <a routerLink="/job-offers">Browse job offers</a> or
-        <a routerLink="/applications/new">add an application</a>.
+        Nothing here yet. <a class="text-link" routerLink="/job-offers">Browse job offers</a> or
+        <a class="text-link" routerLink="/applications/new">add an application</a>.
       </p>
     } @else {
       <ul class="rows">

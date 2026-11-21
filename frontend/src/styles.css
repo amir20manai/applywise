@@ -484,3 +484,6 @@ textarea.input {
     flex-wrap: wrap;
   }
 }
+.btn-block {
+  width: 100%;
+}

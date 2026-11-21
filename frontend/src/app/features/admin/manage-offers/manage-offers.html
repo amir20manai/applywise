@@ -1,9 +1,9 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>Manage job offers</h1>
     <p>Publish the roles candidates can apply to.</p>
   </div>
-  <button type="button" class="primary" (click)="openCreate()">Add offer</button>
+  <button type="button" class="btn btn-primary" (click)="openCreate()">Add offer</button>
 </header>
 
 @if (error()) {
@@ -15,18 +15,18 @@
 }
 
 @if (showForm()) {
-  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <h2>{{ editingId() === null ? 'New job offer' : 'Edit job offer' }}</h2>
 
     @if (companies().length === 0) {
-      <p class="hint">
-        An offer belongs to a company. <a routerLink="/admin/companies">Add a company</a> first.
+      <p class="muted">
+        An offer belongs to a company. <a class="text-link" routerLink="/admin/companies">Add a company</a> first.
       </p>
     } @else {
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="title">Title</label>
-          <input id="title" type="text" formControlName="title" placeholder="Java Developer"
+          <input id="title" class="input" type="text" formControlName="title" placeholder="Java Developer"
                  [class.invalid]="f.title.touched && f.title.invalid" />
           @if (f.title.touched && f.title.invalid) {
             <span class="field-error">Enter the job title.</span>
@@ -35,7 +35,7 @@
 
         <div class="field">
           <label for="companyId">Company</label>
-          <select id="companyId" formControlName="companyId"
+          <select id="companyId" class="input" formControlName="companyId"
                   [class.invalid]="f.companyId.touched && f.companyId.invalid">
             <option [ngValue]="null">Choose a company</option>
             @for (c of companies(); track c.id) {
@@ -48,22 +48,22 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="location">Location</label>
-          <input id="location" type="text" formControlName="location" placeholder="Tunis" />
+          <input id="location" class="input" type="text" formControlName="location" placeholder="Tunis" />
         </div>
 
         <div class="field">
           <label for="deadline">Apply before</label>
-          <input id="deadline" type="datetime-local" formControlName="deadline" />
+          <input id="deadline" class="input" type="datetime-local" formControlName="deadline" />
         </div>
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="employmentType">Contract</label>
-          <input id="employmentType" type="text" formControlName="employmentType"
+          <input id="employmentType" class="input" type="text" formControlName="employmentType"
                  list="contracts" placeholder="CDI" />
           <datalist id="contracts">
             <option value="CDI"></option>
@@ -76,7 +76,7 @@
 
         <div class="field">
           <label for="experienceLevel">Experience</label>
-          <input id="experienceLevel" type="text" formControlName="experienceLevel"
+          <input id="experienceLevel" class="input" type="text" formControlName="experienceLevel"
                  list="levels" placeholder="Junior" />
           <datalist id="levels">
             <option value="Entry level"></option>
@@ -87,19 +87,19 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="salary">Salary</label>
-          <input id="salary" type="text" formControlName="salary" placeholder="1800 TND" />
+          <input id="salary" class="input" type="text" formControlName="salary" placeholder="1800 TND" />
         </div>
 
         <div class="field">
           <label for="sourceUrl">Link to the original post</label>
-          <input id="sourceUrl" type="url" formControlName="sourceUrl" placeholder="https://" />
+          <input id="sourceUrl" class="input" type="url" formControlName="sourceUrl" placeholder="https://" />
         </div>
       </div>
 
-      <section class="ai-box" aria-labelledby="ai-title">
+      <section class="ai-box ai-spacing" aria-labelledby="ai-title">
         <h3 id="ai-title">Write the description with AI</h3>
         <p class="ai-note">
           Only the title, the company, the location and the keywords below are sent.
@@ -108,7 +108,7 @@
         <div class="ai-row">
           <div class="field">
             <label for="aiKeywords">Skills, missions and points to mention (optional)</label>
-            <textarea id="aiKeywords" rows="3" formControlName="aiKeywords"
+            <textarea id="aiKeywords" class="input" rows="3" formControlName="aiKeywords"
                       placeholder="Spring Boot, REST APIs, MySQL, teamwork, hybrid work..."
                       [class.invalid]="f.aiKeywords.invalid"></textarea>
             @if (f.aiKeywords.invalid) {
@@ -118,7 +118,7 @@
 
           <div class="field">
             <label for="aiLanguage">Language</label>
-            <select id="aiLanguage" formControlName="aiLanguage">
+            <select id="aiLanguage" class="input" formControlName="aiLanguage">
               <option value="en">English</option>
               <option value="fr">French</option>
             </select>
@@ -130,19 +130,19 @@
         }
 
         <div class="ai-actions">
-          <button type="button" class="ai-btn" [disabled]="generating()"
+          <button type="button" class="btn btn-ai" [disabled]="generating()"
                   (click)="generateDescription()">
             {{ generating() ? 'Writing...' : 'Generate description' }}
           </button>
           @if (generating()) {
-            <span class="ai-wait" role="status">This can take a few seconds.</span>
+            <span class="muted" role="status">This can take a few seconds.</span>
           }
         </div>
       </section>
 
       <div class="field">
         <label for="description">Description</label>
-        <textarea id="description" rows="10" formControlName="description"
+        <textarea id="description" class="input" rows="10" formControlName="description"
                   placeholder="Missions, required skills, benefits... or generate it above and edit it."
                   [class.invalid]="f.description.invalid"></textarea>
         @if (f.description.invalid) {
@@ -151,10 +151,10 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="primary" [disabled]="saving()">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
           {{ saving() ? 'Saving...' : 'Save offer' }}
         </button>
-        <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
       </div>
     }
   </form>
@@ -169,7 +169,7 @@
   </div>
 } @else {
   <div class="table-wrap">
-    <table>
+    <table class="data-table">
       <thead>
         <tr>
           <th scope="col">Offer</th>
@@ -184,14 +184,16 @@
           <tr>
             <td>
               <strong>{{ o.title }}</strong>
-              <span class="sub">{{ o.companyName || 'Company not listed' }}</span>
+              <span class="cell-sub">{{ o.companyName || 'Company not listed' }}</span>
             </td>
             <td>{{ o.location || '-' }}</td>
             <td>{{ o.employmentType || '-' }}</td>
             <td>{{ o.deadline ? (o.deadline | date: 'd MMM y') : '-' }}</td>
-            <td class="actions">
-              <button type="button" (click)="openEdit(o)">Edit</button>
-              <button type="button" class="delete" (click)="remove(o)">Delete</button>
+            <td>
+              <div class="cell-actions">
+                <button type="button" class="btn btn-secondary btn-sm" (click)="openEdit(o)">Edit</button>
+                <button type="button" class="btn btn-danger btn-sm" (click)="remove(o)">Delete</button>
+              </div>
             </td>
           </tr>
         }
