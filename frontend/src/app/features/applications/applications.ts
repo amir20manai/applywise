@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm';
 
 import { ApplicationApi } from '../../core/services/application-api';
 import { AiApi } from '../../core/services/ai-api';
@@ -16,6 +17,7 @@ import { FollowUpPurpose, LetterLanguage } from '../../core/models/ai.model';
 export class Applications implements OnInit {
   private api = inject(ApplicationApi);
   private ai = inject(AiApi);
+    private confirmDialog = inject(ConfirmService);
 
   statuses = STATUSES;
   items = signal<Application[]>([]);
@@ -78,10 +80,14 @@ export class Applications implements OnInit {
     });
   }
 
-  remove(app: Application): void {
-    if (!confirm(`Delete "${app.jobTitle}" at ${app.companyName}?`)) {
-      return;
-    }
+  async remove(app: Application): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Delete this application?',
+      message: `"${app.jobTitle}" at ${app.companyName} will be removed from your list. This cannot be undone.`,
+      confirmLabel: 'Delete application',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     this.api.delete(app.id).subscribe({
       next: () => {

@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 
+import { ConfirmService } from '../../core/services/confirm';
 import { ResumeApi } from '../../core/services/resume-api';
 import { Resume } from '../../core/models/resume.model';
 
@@ -15,6 +16,7 @@ const ALLOWED = ['.pdf', '.doc', '.docx'];
 })
 export class Resumes implements OnInit {
   private api = inject(ResumeApi);
+    private confirmDialog = inject(ConfirmService);
 
   items = signal<Resume[]>([]);
   loading = signal(true);
@@ -79,8 +81,14 @@ export class Resumes implements OnInit {
     });
   }
 
-  remove(resume: Resume): void {
-    if (!confirm(`Delete "${resume.fileName}"?`)) return;
+  async remove(resume: Resume): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Delete this CV?',
+      message: `"${resume.fileName}" will be removed from your account. This cannot be undone.`,
+      confirmLabel: 'Delete CV',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     this.error.set('');
     this.api.delete(resume.id).subscribe({

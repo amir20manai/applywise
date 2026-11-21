@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { ConfirmService } from '../../../core/services/confirm';
 import { JobOfferApi } from '../../../core/services/job-offer-api';
 import { CompanyApi } from '../../../core/services/company-api';
 import { AiApi } from '../../../core/services/ai-api';
@@ -21,6 +22,7 @@ export class ManageOffers implements OnInit {
   private api = inject(JobOfferApi);
   private companyApi = inject(CompanyApi);
   private ai = inject(AiApi);
+    private confirmDialog = inject(ConfirmService);
 
   items = signal<JobOffer[]>([]);
   companies = signal<Company[]>([]);
@@ -106,7 +108,7 @@ export class ManageOffers implements OnInit {
     this.editingId.set(null);
   }
 
-  generateDescription(): void {
+  async generateDescription(): Promise<void> {
     this.aiError.set('');
 
     const v = this.form.getRawValue();
@@ -123,8 +125,13 @@ export class ManageOffers implements OnInit {
       return;
     }
 
-    if (v.description.trim() && !confirm('Replace the description you already wrote?')) {
-      return;
+    if (v.description.trim()) {
+      const replace = await this.confirmDialog.ask({
+        title: 'Replace the description?',
+        message: 'The AI will write a new description and replace the one you already wrote.',
+        confirmLabel: 'Replace it',
+      });
+      if (!replace) return;
     }
 
     const companyName = this.companies().find((c) => c.id === v.companyId)?.name;
@@ -202,8 +209,14 @@ export class ManageOffers implements OnInit {
     });
   }
 
-  remove(offer: JobOffer): void {
-    if (!confirm(`Delete "${offer.title}"?`)) return;
+  async remove(offer: JobOffer): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Delete this job offer?',
+      message: `"${offer.title}" will be removed. An offer that candidates already applied to cannot be deleted.`,
+      confirmLabel: 'Delete offer',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     this.error.set('');
     this.notice.set('');

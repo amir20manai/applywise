@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { ConfirmService } from '../../../core/services/confirm';
 import { ApplicationApi } from '../../../core/services/application-api';
 import { ResumeApi } from '../../../core/services/resume-api';
 import { AiApi } from '../../../core/services/ai-api';
@@ -22,6 +23,7 @@ export class ApplicationForm implements OnInit {
   private applications = inject(ApplicationApi);
   private resumeApi = inject(ResumeApi);
   private ai = inject(AiApi);
+    private confirmDialog = inject(ConfirmService);
 
   statuses = STATUSES;
   resumes = signal<Resume[]>([]);
@@ -73,7 +75,7 @@ export class ApplicationForm implements OnInit {
     });
   }
 
-  generateLetter(): void {
+  async generateLetter(): Promise<void> {
     this.aiError.set('');
 
     const v = this.form.getRawValue();
@@ -92,8 +94,13 @@ export class ApplicationForm implements OnInit {
       return;
     }
 
-    if (v.coverLetter.trim() && !confirm('Replace the cover letter you already wrote?')) {
-      return;
+    if (v.coverLetter.trim()) {
+      const replace = await this.confirmDialog.ask({
+        title: 'Replace the cover letter?',
+        message: 'The AI will write a new letter and replace the one you already wrote.',
+        confirmLabel: 'Replace it',
+      });
+      if (!replace) return;
     }
 
     this.generating.set(true);

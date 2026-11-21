@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { ConfirmService } from '../../../core/services/confirm';
 import { CompanyApi } from '../../../core/services/company-api';
 import { Company } from '../../../core/models/company.model';
 
@@ -13,6 +14,7 @@ import { Company } from '../../../core/models/company.model';
 export class Companies implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(CompanyApi);
+    private confirmDialog = inject(ConfirmService);
 
   items = signal<Company[]>([]);
   editingId = signal<number | null>(null);
@@ -112,8 +114,14 @@ export class Companies implements OnInit {
     });
   }
 
-  remove(company: Company): void {
-    if (!confirm(`Delete "${company.name}"?`)) return;
+  async remove(company: Company): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Delete this company?',
+      message: `${company.name} will be removed. A company that still has job offers cannot be deleted.`,
+      confirmLabel: 'Delete company',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     this.error.set('');
     this.notice.set('');

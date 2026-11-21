@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ConfirmService } from '../../core/services/confirm';
 
 import { InterviewApi } from '../../core/services/interview-api';
 import { ApplicationApi } from '../../core/services/application-api';
@@ -25,6 +26,7 @@ export class Interviews implements OnInit {
   private api = inject(InterviewApi);
   private applicationsApi = inject(ApplicationApi);
   private ai = inject(AiApi);
+  private confirmDialog = inject(ConfirmService);
 
   statuses = INTERVIEW_STATUSES;
   items = signal<Interview[]>([]);
@@ -130,8 +132,14 @@ export class Interviews implements OnInit {
     });
   }
 
-  remove(interview: Interview): void {
-    if (!confirm(`Delete "${interview.title}" at ${interview.companyName}?`)) return;
+  async remove(interview: Interview): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Delete this interview?',
+      message: `"${interview.title}" at ${interview.companyName} will be removed. This cannot be undone.`,
+      confirmLabel: 'Delete interview',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     this.api.delete(interview.id).subscribe({
       next: () => {

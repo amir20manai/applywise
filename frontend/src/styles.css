@@ -487,3 +487,21 @@ textarea.input {
 .btn-block {
   width: 100%;
 }
+/* Desktop: no elastic bounce of the whole page (the app scrolls inside its content area) */
+@media (min-width: 801px) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}
+/* Confirmation button for actions that cannot be undone */
+.btn-danger-solid {
+  color: #ffffff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger-solid:hover:not(:disabled) {
+  background: #8f1c12;
+  border-color: #8f1c12;
+}

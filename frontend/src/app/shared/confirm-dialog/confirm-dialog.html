@@ -1,0 +1,30 @@
+<dialog
+  #dialog
+  class="dialog"
+  aria-labelledby="confirm-title"
+  aria-describedby="confirm-message"
+  (cancel)="onCancel($event)"
+  (click)="onBackdropClick($event)"
+>
+  @if (confirm.request(); as req) {
+    <div class="dialog-body">
+      <h2 id="confirm-title">{{ req.title }}</h2>
+      <p id="confirm-message">{{ req.message }}</p>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" (click)="confirm.answer(false)">
+          {{ req.cancelLabel }}
+        </button>
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="!req.danger"
+          [class.btn-danger-solid]="req.danger"
+          (click)="confirm.answer(true)"
+        >
+          {{ req.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  }
+</dialog>
