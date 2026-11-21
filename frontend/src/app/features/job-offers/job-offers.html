@@ -1,19 +1,21 @@
-<header class="head">
-  <h1>Job offers</h1>
-  <p>Browse open roles and apply with your default CV.</p>
+<header class="page-head">
+  <div>
+    <h1>Job offers</h1>
+    <p>Browse open roles and apply with your default CV.</p>
+  </div>
 </header>
 
-<form class="search" [formGroup]="search" (ngSubmit)="submitSearch()">
+<form class="panel search" [formGroup]="search" (ngSubmit)="submitSearch()">
   <div class="field">
     <label for="title">Job title</label>
-    <input id="title" type="search" formControlName="title" placeholder="Java Developer" />
+    <input id="title" class="input" type="search" formControlName="title" placeholder="Java Developer" />
   </div>
   <div class="field">
     <label for="location">Location</label>
-    <input id="location" type="search" formControlName="location" placeholder="Tunis" />
+    <input id="location" class="input" type="search" formControlName="location" placeholder="Tunis" />
   </div>
-  <button type="submit" class="primary">Search</button>
-  <button type="button" class="ghost" (click)="clearSearch()">Clear</button>
+  <button type="submit" class="btn btn-primary">Search</button>
+  <button type="button" class="btn btn-secondary" (click)="clearSearch()">Clear</button>
 </form>
 
 @if (error()) {
@@ -38,33 +40,33 @@
     <p class="hint">Try a shorter title or clear the location.</p>
   </div>
 } @else {
-  <ul class="list">
+  <ul class="list-panel">
     @for (offer of items(); track offer.id) {
-      <li class="offer">
+      <li>
         <div class="main">
           <div class="info">
             <strong>{{ offer.title }}</strong>
-            <span class="sub">
+            <span class="cell-sub">
               {{ offer.companyName || 'Company not listed' }}@if (offer.location) {, {{ offer.location }}}
             </span>
             <span class="meta">
-              @if (offer.employmentType) { <span>{{ offer.employmentType }}</span> }
-              @if (offer.experienceLevel) { <span>{{ offer.experienceLevel }}</span> }
-              @if (offer.salary) { <span>{{ offer.salary }}</span> }
-              @if (offer.deadline) { <span>Apply before {{ offer.deadline | date: 'd MMM y' }}</span> }
+              @if (offer.employmentType) { <span class="pill">{{ offer.employmentType }}</span> }
+              @if (offer.experienceLevel) { <span class="pill">{{ offer.experienceLevel }}</span> }
+              @if (offer.salary) { <span class="pill">{{ offer.salary }}</span> }
+              @if (offer.deadline) { <span class="pill">Apply before {{ offer.deadline | date: 'd MMM y' }}</span> }
             </span>
           </div>
 
           <div class="actions">
-            <button type="button" class="ghost" [attr.aria-expanded]="expandedId() === offer.id"
+            <button type="button" class="btn btn-secondary" [attr.aria-expanded]="expandedId() === offer.id"
                     (click)="toggle(offer.id)">
               {{ expandedId() === offer.id ? 'Hide details' : 'Details' }}
             </button>
 
             @if (appliedIds().has(offer.id)) {
-              <span class="applied">Applied</span>
+              <span class="applied pill pill-success">Applied</span>
             } @else {
-              <button type="button" class="primary" [disabled]="applyingId() === offer.id"
+              <button type="button" class="btn btn-primary" [disabled]="applyingId() === offer.id"
                       (click)="apply(offer)">
                 {{ applyingId() === offer.id ? 'Applying...' : 'Apply' }}
               </button>
@@ -74,22 +76,22 @@
 
         @if (expandedId() === offer.id) {
           <div class="details">
-            <p>{{ offer.description || 'No description provided.' }}</p>
+            <p class="description">{{ offer.description || 'No description provided.' }}</p>
             @if (offer.sourceUrl) {
-              <a [href]="offer.sourceUrl" target="_blank" rel="noopener">Open the original post</a>
+              <a class="text-link" [href]="offer.sourceUrl" target="_blank" rel="noopener">Open the original post</a>
             }
 
             @if (offer.description) {
               <div class="summary-tools">
                 <label class="lang">
                   Language
-                  <select [value]="summaryLanguage()" (change)="setSummaryLanguage($event)">
+                  <select class="input input-auto" [value]="summaryLanguage()" (change)="setSummaryLanguage($event)">
                     <option value="en">English</option>
                     <option value="fr">French</option>
                   </select>
                 </label>
 
-                <button type="button" class="ghost ai"
+                <button type="button" class="btn btn-ai"
                         [disabled]="summaryLoadingId() !== null"
                         (click)="summarize(offer)">
                   {{
@@ -102,15 +104,15 @@
                 </button>
 
                 @if (summaryLoadingId() === offer.id) {
-                  <span class="summary-wait" role="status">This can take a few seconds.</span>
+                  <span class="muted" role="status">This can take a few seconds.</span>
                 }
               </div>
 
               @if (summaries()[offer.id]; as summary) {
-                <section class="summary" [attr.aria-label]="'AI summary of ' + offer.title">
-                  <strong>AI summary</strong>
+                <section class="ai-box summary" [attr.aria-label]="'AI summary of ' + offer.title">
+                  <h3>AI summary</h3>
                   <p class="summary-text">{{ summary }}</p>
-                  <p class="summary-note">
+                  <p class="ai-note">
                     Written by AI from the description above. Check the original post before you apply.
                   </p>
                 </section>

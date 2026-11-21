@@ -3,87 +3,11 @@
   max-width: 860px;
 }
 
-.head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.head h1 {
-  margin: 0 0 6px;
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.head p {
-  margin: 0;
-  color: #5b6b7c;
-}
-
-.muted {
-  color: #5b6b7c;
-}
-
-.add {
-  flex-shrink: 0;
-  padding: 11px 20px;
-  font: inherit;
-  font-weight: 600;
-  color: #ffffff;
-  background: #2457f5;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.add:hover:not(:disabled) {
-  background: #1a44cc;
-}
-
-.add:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
-.add:focus-visible,
-.actions button:focus-visible {
-  outline: 3px solid rgba(36, 87, 245, 0.35);
-  outline-offset: 2px;
-}
-
-.alert {
-  margin-bottom: 16px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #fdeceb;
-  border: 1px solid #f4c3bf;
-  color: #b42318;
-  font-size: 0.92rem;
-}
-
-/* ---------- List ---------- */
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  background: #ffffff;
-  border: 1px solid #dfe5ec;
-  border-radius: 12px;
-}
-
 .item {
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-}
-
-.item + .item {
-  border-top: 1px solid #edf1f5;
 }
 
 .info {
@@ -99,77 +23,13 @@
   white-space: nowrap;
 }
 
-.sub {
-  color: #5b6b7c;
-  font-size: 0.88rem;
-}
-
-.badge {
-  flex-shrink: 0;
-  padding: 3px 10px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #14683f;
-  background: #dcf3e8;
-  border-radius: 999px;
-}
-
 .actions {
   display: flex;
   flex-shrink: 0;
   gap: 8px;
 }
 
-.actions button {
-  padding: 7px 12px;
-  font: inherit;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: #34465a;
-  background: #ffffff;
-  border: 1px solid #d3dbe4;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.actions button:hover {
-  border-color: #9fb0c3;
-}
-
-.actions .delete {
-  color: #b42318;
-  border-color: #f0c9c5;
-}
-
-.actions .delete:hover {
-  background: #fdeceb;
-}
-
-/* ---------- Empty ---------- */
-.empty {
-  padding: 40px 24px;
-  text-align: center;
-  background: #ffffff;
-  border: 1px dashed #c5d0dc;
-  border-radius: 12px;
-}
-
-.empty p {
-  margin: 0;
-}
-
-.empty .hint {
-  margin-top: 6px;
-  color: #5b6b7c;
-  font-size: 0.92rem;
-}
-
-/* ---------- Mobile ---------- */
 @media (max-width: 700px) {
-  .head {
-    flex-direction: column;
-  }
-
   .item {
     flex-wrap: wrap;
   }

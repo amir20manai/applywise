@@ -1,4 +1,4 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>My CVs</h1>
     <p>Upload your CVs once, then pick one for each application.</p>
@@ -7,7 +7,7 @@
   <input #picker type="file" hidden
          accept=".pdf,.doc,.docx,application/pdf"
          (change)="onFileSelected($event)" />
-  <button type="button" class="add" [disabled]="uploading()" (click)="picker.click()">
+  <button type="button" class="btn btn-primary" [disabled]="uploading()" (click)="picker.click()">
     {{ uploading() ? 'Uploading...' : 'Upload CV' }}
   </button>
 </header>
@@ -24,12 +24,12 @@
     <p class="hint">PDF, DOC or DOCX, up to 5 MB. Your first CV becomes the default one.</p>
   </div>
 } @else {
-  <ul class="list">
+  <ul class="list-panel">
     @for (cv of items(); track cv.id) {
       <li class="item">
         <div class="info">
           <strong>{{ cv.fileName }}</strong>
-          <span class="sub">
+          <span class="cell-sub">
             {{ formatSize(cv.fileSize) }}
             @if (cv.fileSize) { <span aria-hidden="true">&middot;</span> }
             Uploaded {{ cv.uploadedAt | date: 'd MMM y' }}
@@ -37,15 +37,15 @@
         </div>
 
         @if (cv.defaultResume) {
-          <span class="badge">Default</span>
+          <span class="pill pill-success">Default</span>
         }
 
         <div class="actions">
-          <button type="button" (click)="download(cv)">Download</button>
+          <button type="button" class="btn btn-secondary btn-sm" (click)="download(cv)">Download</button>
           @if (!cv.defaultResume) {
-            <button type="button" (click)="makeDefault(cv)">Set as default</button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="makeDefault(cv)">Set as default</button>
           }
-          <button type="button" class="delete" (click)="remove(cv)">Delete</button>
+          <button type="button" class="btn btn-danger btn-sm" (click)="remove(cv)">Delete</button>
         </div>
       </li>
     }

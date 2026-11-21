@@ -1,18 +1,18 @@
-<header class="head">
+<header class="page-head">
   <div>
     <h1>Interviews</h1>
     <p>Keep every interview date, place and link in one list.</p>
   </div>
 
-  <div class="head-actions">
+  <div class="page-actions">
     <label class="lang">
       Prep language
-      <select [value]="prepLanguage()" (change)="setPrepLanguage($event)">
+      <select class="input input-auto" [value]="prepLanguage()" (change)="setPrepLanguage($event)">
         <option value="en">English</option>
         <option value="fr">French</option>
       </select>
     </label>
-    <button type="button" class="primary" (click)="openForm()">Add interview</button>
+    <button type="button" class="btn btn-primary" (click)="openForm()">Add interview</button>
   </div>
 </header>
 
@@ -25,18 +25,18 @@
 }
 
 @if (showForm()) {
-  <form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <h2>New interview</h2>
 
     @if (applications().length === 0) {
-      <p class="hint">
+      <p class="muted">
         An interview belongs to an application.
-        <a routerLink="/applications/new">Add an application</a> first.
+        <a class="text-link" routerLink="/applications/new">Add an application</a> first.
       </p>
     } @else {
       <div class="field">
         <label for="applicationId">Application</label>
-        <select id="applicationId" formControlName="applicationId"
+        <select id="applicationId" class="input" formControlName="applicationId"
                 [class.invalid]="f.applicationId.touched && f.applicationId.invalid">
           <option [ngValue]="null">Choose an application</option>
           @for (a of applications(); track a.id) {
@@ -48,10 +48,10 @@
         }
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="title">Title</label>
-          <input id="title" type="text" formControlName="title"
+          <input id="title" class="input" type="text" formControlName="title"
                  placeholder="Technical interview"
                  [class.invalid]="f.title.touched && f.title.invalid" />
           @if (f.title.touched && f.title.invalid) {
@@ -61,35 +61,35 @@
 
         <div class="field">
           <label for="scheduledAt">Date and time</label>
-          <input id="scheduledAt" type="datetime-local" formControlName="scheduledAt" />
+          <input id="scheduledAt" class="input" type="datetime-local" formControlName="scheduledAt" />
         </div>
       </div>
 
-      <div class="row">
+      <div class="field-row">
         <div class="field">
           <label for="location">Location</label>
-          <input id="location" type="text" formControlName="location"
+          <input id="location" class="input" type="text" formControlName="location"
                  placeholder="Office in Lac 2, Tunis" />
         </div>
 
         <div class="field">
           <label for="meetingLink">Meeting link</label>
-          <input id="meetingLink" type="url" formControlName="meetingLink"
+          <input id="meetingLink" class="input" type="url" formControlName="meetingLink"
                  placeholder="https://meet.google.com/..." />
         </div>
       </div>
 
       <div class="field">
         <label for="notes">Notes</label>
-        <textarea id="notes" rows="3" formControlName="notes"
+        <textarea id="notes" class="input" rows="3" formControlName="notes"
                   placeholder="Who you meet, what to prepare..."></textarea>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="primary" [disabled]="saving()">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
           {{ saving() ? 'Saving...' : 'Save interview' }}
         </button>
-        <button type="button" class="ghost" (click)="closeForm()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
       </div>
     }
   </form>
@@ -103,7 +103,7 @@
     <p class="hint">Add one as soon as a recruiter gives you a date.</p>
   </div>
 } @else {
-  <ul class="list">
+  <ul class="list-panel">
     @for (i of items(); track i.id) {
       <li class="item">
         <div class="when">
@@ -117,11 +117,11 @@
 
         <div class="info">
           <strong>{{ i.title }}</strong>
-          <span class="sub">{{ i.jobTitle }} at {{ i.companyName }}</span>
+          <span class="cell-sub">{{ i.jobTitle }} at {{ i.companyName }}</span>
           <span class="where">
             @if (i.location) { <span>{{ i.location }}</span> }
             @if (i.meetingLink) {
-              <a [href]="i.meetingLink" target="_blank" rel="noopener">Open meeting link</a>
+              <a class="text-link" [href]="i.meetingLink" target="_blank" rel="noopener">Open meeting link</a>
             }
           </span>
           @if (i.notes) {
@@ -132,7 +132,7 @@
         <div class="actions">
           <label class="status">
             <span class="dot" [style.background]="color(i.status)"></span>
-            <select [value]="i.status" (change)="changeStatus(i, $event)"
+            <select class="input" [value]="i.status" (change)="changeStatus(i, $event)"
                     [attr.aria-label]="'Status of ' + i.title">
               @for (s of statuses; track s.key) {
                 <option [value]="s.key" [selected]="s.key === i.status">{{ s.label }}</option>
@@ -140,29 +140,29 @@
             </select>
           </label>
 
-          <button type="button" class="prepare"
+          <button type="button" class="btn btn-ai btn-sm"
                   [disabled]="prepLoadingId() !== null"
                   (click)="prepare(i)">
             {{ prepLoadingId() === i.id ? 'Preparing...' : 'Prepare with AI' }}
           </button>
 
-          <button type="button" class="delete" (click)="remove(i)">Delete</button>
+          <button type="button" class="btn btn-danger btn-sm" (click)="remove(i)">Delete</button>
         </div>
 
         @if (prepLoadingId() === i.id) {
-          <p class="prep-wait" role="status">
-            Preparing your questions. This can take a minute or two.
+          <p class="prep-wait muted" role="status">
+            Preparing your questions. This can take a few seconds.
           </p>
         }
 
         @if (prepResults()[i.id]; as text) {
-          <section class="prep" [attr.aria-label]="'Preparation for ' + i.title">
+          <section class="ai-box prep" [attr.aria-label]="'Preparation for ' + i.title">
             <div class="prep-head">
-              <strong>Interview preparation</strong>
-              <button type="button" (click)="hidePrep(i.id)">Hide</button>
+              <h3>Interview preparation</h3>
+              <button type="button" class="link-button" (click)="hidePrep(i.id)">Hide</button>
             </div>
             <p class="prep-text">{{ text }}</p>
-            <p class="prep-note">
+            <p class="ai-note">
               Written by AI from the job title, the company and your notes. Check it before you rely on it.
             </p>
           </section>

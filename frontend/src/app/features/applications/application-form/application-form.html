@@ -1,13 +1,15 @@
-<header class="head">
-  <a class="back" routerLink="/applications">Back to applications</a>
-  <h1>{{ editingId() === null ? 'Add an application' : 'Edit application' }}</h1>
-  <p>
-    {{
-      editingId() === null
-        ? 'Save a role you applied to, even if you found it on another site.'
-        : 'Update the details, the status or your notes.'
-    }}
-  </p>
+<header class="page-head">
+  <div>
+    <a class="back" routerLink="/applications">Back to applications</a>
+    <h1>{{ editingId() === null ? 'Add an application' : 'Edit application' }}</h1>
+    <p>
+      {{
+        editingId() === null
+          ? 'Save a role you applied to, even if you found it on another site.'
+          : 'Update the details, the status or your notes.'
+      }}
+    </p>
+  </div>
 </header>
 
 @if (errorMessage()) {
@@ -17,11 +19,11 @@
 @if (loading()) {
   <p class="muted">Loading the application...</p>
 } @else {
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <div class="row">
+  <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field-row">
       <div class="field">
         <label for="jobTitle">Job title</label>
-        <input id="jobTitle" type="text" formControlName="jobTitle"
+        <input id="jobTitle" class="input" type="text" formControlName="jobTitle"
                placeholder="Java Developer"
                [class.invalid]="f.jobTitle.touched && f.jobTitle.invalid" />
         @if (f.jobTitle.touched && f.jobTitle.invalid) {
@@ -31,7 +33,7 @@
 
       <div class="field">
         <label for="companyName">Company</label>
-        <input id="companyName" type="text" formControlName="companyName"
+        <input id="companyName" class="input" type="text" formControlName="companyName"
                placeholder="Vermeg"
                [class.invalid]="f.companyName.touched && f.companyName.invalid" />
         @if (f.companyName.touched && f.companyName.invalid) {
@@ -40,15 +42,15 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="field-row">
       <div class="field">
         <label for="location">Location</label>
-        <input id="location" type="text" formControlName="location" placeholder="Tunis" />
+        <input id="location" class="input" type="text" formControlName="location" placeholder="Tunis" />
       </div>
 
       <div class="field">
         <label for="status">Status</label>
-        <select id="status" formControlName="status">
+        <select id="status" class="input" formControlName="status">
           @for (s of statuses; track s.key) {
             <option [value]="s.key">{{ s.label }}</option>
           }
@@ -58,12 +60,12 @@
 
     <div class="field">
       <label for="jobUrl">Link to the job post</label>
-      <input id="jobUrl" type="url" formControlName="jobUrl" placeholder="https://" />
+      <input id="jobUrl" class="input" type="url" formControlName="jobUrl" placeholder="https://" />
     </div>
 
     <div class="field">
       <label for="resumeId">CV used</label>
-      <select id="resumeId" formControlName="resumeId">
+      <select id="resumeId" class="input" formControlName="resumeId">
         <option [ngValue]="null">No CV</option>
         @for (r of resumes(); track r.id) {
           <option [ngValue]="r.id">{{ r.fileName }}</option>
@@ -73,7 +75,7 @@
 
     <div class="field">
       <label for="notes">Notes</label>
-      <textarea id="notes" rows="4" formControlName="notes"
+      <textarea id="notes" class="input" rows="4" formControlName="notes"
                 placeholder="Recruiter name, salary discussed, next step..."
                 [class.invalid]="f.notes.invalid"></textarea>
       @if (f.notes.invalid) {
@@ -81,7 +83,7 @@
       }
     </div>
 
-    <section class="ai-box" aria-labelledby="ai-title">
+    <section class="ai-box ai-spacing" aria-labelledby="ai-title">
       <h2 id="ai-title">Write your cover letter with AI</h2>
       <p class="ai-note">
         Only your name, the job title, the company, the location and the text below are sent.
@@ -91,7 +93,7 @@
       <div class="ai-row">
         <div class="field">
           <label for="aiHighlights">What should the letter highlight? (optional)</label>
-          <textarea id="aiHighlights" rows="3" formControlName="aiHighlights"
+          <textarea id="aiHighlights" class="input" rows="3" formControlName="aiHighlights"
                     placeholder="Skills, projects, why you want this role..."
                     [class.invalid]="f.aiHighlights.invalid"></textarea>
           @if (f.aiHighlights.invalid) {
@@ -101,7 +103,7 @@
 
         <div class="field">
           <label for="aiLanguage">Language</label>
-          <select id="aiLanguage" formControlName="aiLanguage">
+          <select id="aiLanguage" class="input" formControlName="aiLanguage">
             <option value="en">English</option>
             <option value="fr">French</option>
           </select>
@@ -113,18 +115,18 @@
       }
 
       <div class="ai-actions">
-        <button type="button" class="ghost" [disabled]="generating()" (click)="generateLetter()">
+        <button type="button" class="btn btn-ai" [disabled]="generating()" (click)="generateLetter()">
           {{ generating() ? 'Writing...' : 'Generate cover letter' }}
         </button>
         @if (generating()) {
-          <span class="ai-wait" role="status">This can take up to a minute.</span>
+          <span class="muted" role="status">This can take a few seconds.</span>
         }
       </div>
     </section>
 
     <div class="field">
       <label for="coverLetter">Cover letter</label>
-      <textarea id="coverLetter" rows="10" formControlName="coverLetter"
+      <textarea id="coverLetter" class="input" rows="10" formControlName="coverLetter"
                 placeholder="Paste the cover letter you sent, or generate one above and edit it."
                 [class.invalid]="f.coverLetter.invalid"></textarea>
       @if (f.coverLetter.invalid) {
@@ -133,10 +135,10 @@
     </div>
 
     <div class="actions">
-      <button class="submit" type="submit" [disabled]="saving()">
+      <button class="btn btn-primary" type="submit" [disabled]="saving()">
         {{ saving() ? 'Saving...' : editingId() === null ? 'Save application' : 'Save changes' }}
       </button>
-      <a class="cancel" routerLink="/applications">Cancel</a>
+      <a class="btn btn-secondary" routerLink="/applications">Cancel</a>
     </div>
   </form>
 }
