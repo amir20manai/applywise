@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 
+import { ToastService } from '../../core/services/toast';
 import { ConfirmService } from '../../core/services/confirm';
 import { ResumeApi } from '../../core/services/resume-api';
 import { Resume } from '../../core/models/resume.model';
@@ -16,7 +17,8 @@ const ALLOWED = ['.pdf', '.doc', '.docx'];
 })
 export class Resumes implements OnInit {
   private api = inject(ResumeApi);
-    private confirmDialog = inject(ConfirmService);
+  private confirmDialog = inject(ConfirmService);
+  private toast = inject(ToastService);
 
   items = signal<Resume[]>([]);
   loading = signal(true);
@@ -36,25 +38,25 @@ export class Resumes implements OnInit {
 
     const name = file.name.toLowerCase();
     if (!ALLOWED.some((ext) => name.endsWith(ext))) {
-      this.error.set('Only PDF, DOC and DOCX files are allowed.');
+      this.toast.error('Only PDF, DOC and DOCX files are allowed.');
       return;
     }
     if (file.size > MAX_SIZE) {
-      this.error.set('This file is larger than 5 MB.');
+      this.toast.error('This file is larger than 5 MB.');
       return;
     }
 
-    this.error.set('');
     this.uploading.set(true);
 
     this.api.upload(file).subscribe({
       next: () => {
         this.uploading.set(false);
+        this.toast.success(`${file.name} uploaded.`);
         this.load();
       },
       error: (err) => {
         this.uploading.set(false);
-        this.error.set(err.error?.message ?? 'Could not upload the file. Try again.');
+        this.toast.error(err.error?.message ?? 'Could not upload the file. Try again.');
       },
     });
   }
@@ -69,15 +71,17 @@ export class Resumes implements OnInit {
         link.click();
         URL.revokeObjectURL(url);
       },
-      error: () => this.error.set('Could not download this CV. Try again.'),
+      error: () => this.toast.error('Could not download this CV. Try again.'),
     });
   }
 
   makeDefault(resume: Resume): void {
-    this.error.set('');
     this.api.setDefault(resume.id).subscribe({
-      next: () => this.load(),
-      error: (err) => this.error.set(err.error?.message ?? 'Could not update the default CV.'),
+      next: () => {
+        this.toast.success(`${resume.fileName} is now your default CV.`);
+        this.load();
+      },
+      error: (err) => this.toast.error(err.error?.message ?? 'Could not update the default CV.'),
     });
   }
 
@@ -90,10 +94,12 @@ export class Resumes implements OnInit {
     });
     if (!confirmed) return;
 
-    this.error.set('');
     this.api.delete(resume.id).subscribe({
-      next: () => this.load(), // le backend choisit un nouveau CV par défaut si besoin
-      error: (err) => this.error.set(err.error?.message ?? 'Could not delete this CV.'),
+      next: () => {
+        this.toast.success('CV deleted.');
+        this.load(); // le backend choisit un nouveau CV par défaut si besoin
+      },
+      error: (err) => this.toast.error(err.error?.message ?? 'Could not delete this CV.'),
     });
   }
 

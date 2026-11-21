@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { ToastService } from '../../core/services/toast';
 import { JobOfferApi } from '../../core/services/job-offer-api';
 import { ApplicationApi } from '../../core/services/application-api';
 import { ResumeApi } from '../../core/services/resume-api';
@@ -22,6 +23,7 @@ export class JobOffers implements OnInit {
   private applicationsApi = inject(ApplicationApi);
   private resumeApi = inject(ResumeApi);
   private ai = inject(AiApi);
+  private toast = inject(ToastService);
 
   items = signal<JobOffer[]>([]);
   appliedIds = signal<Set<number>>(new Set());
@@ -76,18 +78,20 @@ export class JobOffers implements OnInit {
 
   apply(offer: JobOffer): void {
     this.error.set('');
-    this.notice.set('');
     this.applyingId.set(offer.id);
 
     this.applicationsApi.applyToOffer(offer.id, this.defaultResumeId()).subscribe({
       next: () => {
         this.applyingId.set(null);
         this.appliedIds.update((ids) => new Set(ids).add(offer.id));
-        this.notice.set(`Application saved for ${offer.title}.`);
+        this.toast.success(`Application saved for ${offer.title}.`, {
+          label: 'View applications',
+          link: '/applications',
+        });
       },
       error: (err) => {
         this.applyingId.set(null);
-        this.error.set(err.error?.message ?? 'Could not apply to this offer. Try again.');
+        this.toast.error(err.error?.message ?? 'Could not apply to this offer. Try again.');
       },
     });
   }

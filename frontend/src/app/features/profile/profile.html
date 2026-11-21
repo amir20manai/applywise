@@ -14,9 +14,6 @@
     @if (profileError()) {
       <div class="alert" role="alert">{{ profileError() }}</div>
     }
-    @if (profileNotice()) {
-      <div class="notice" role="status">{{ profileNotice() }}</div>
-    }
 
     <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
       <div class="field-row">
@@ -73,9 +70,6 @@
 
     @if (passwordError()) {
       <div class="alert" role="alert">{{ passwordError() }}</div>
-    }
-    @if (passwordNotice()) {
-      <div class="notice" role="status">{{ passwordNotice() }}</div>
     }
 
     <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" novalidate>

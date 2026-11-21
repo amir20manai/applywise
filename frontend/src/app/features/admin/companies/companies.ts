@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { ToastService } from '../../../core/services/toast';
 import { ConfirmService } from '../../../core/services/confirm';
 import { CompanyApi } from '../../../core/services/company-api';
 import { Company } from '../../../core/models/company.model';
@@ -14,7 +15,8 @@ import { Company } from '../../../core/models/company.model';
 export class Companies implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(CompanyApi);
-    private confirmDialog = inject(ConfirmService);
+  private confirmDialog = inject(ConfirmService);
+  private toast = inject(ToastService);
 
   items = signal<Company[]>([]);
   editingId = signal<number | null>(null);
@@ -99,7 +101,7 @@ export class Companies implements OnInit {
         this.saving.set(false);
         this.showForm.set(false);
         this.editingId.set(null);
-        this.notice.set(`${saved.name} saved.`);
+        this.toast.success(`${saved.name} saved.`);
         this.load();
       },
       error: (err) => {
@@ -123,16 +125,13 @@ export class Companies implements OnInit {
     });
     if (!confirmed) return;
 
-    this.error.set('');
-    this.notice.set('');
-
     this.api.delete(company.id).subscribe({
       next: () => {
         this.items.update((list) => list.filter((c) => c.id !== company.id));
-        this.notice.set(`${company.name} deleted.`);
+        this.toast.success(`${company.name} deleted.`);
       },
       // Le backend refuse si des offres sont liées à cette company (409)
-      error: (err) => this.error.set(err.error?.message ?? 'Could not delete the company.'),
+      error: (err) => this.toast.error(err.error?.message ?? 'Could not delete the company.'),
     });
   }
 

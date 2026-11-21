@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 
+import { ToastService } from '../../core/services/toast';
 import { AuthService } from '../../core/services/auth';
 import { ProfileApi } from '../../core/services/profile-api';
 import { Profile as UserProfile } from '../../core/models/profile.model';
@@ -28,6 +29,7 @@ export class Profile implements OnInit {
   private fb = inject(FormBuilder);
   private api = inject(ProfileApi);
   private auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   profile = signal<UserProfile | null>(null);
   loading = signal(true);
@@ -90,7 +92,6 @@ export class Profile implements OnInit {
     const v = this.profileForm.getRawValue();
     this.savingProfile.set(true);
     this.profileError.set('');
-    this.profileNotice.set('');
 
     this.api
       .update({
@@ -105,7 +106,7 @@ export class Profile implements OnInit {
           this.savingProfile.set(false);
           this.profile.set(updated);
           this.auth.updateUserName(updated.firstName, updated.lastName);
-          this.profileNotice.set('Your profile was updated.');
+          this.toast.success('Your profile was updated.');
         },
         error: (err) => {
           this.savingProfile.set(false);
@@ -128,7 +129,6 @@ export class Profile implements OnInit {
     const v = this.passwordForm.getRawValue();
     this.savingPassword.set(true);
     this.passwordError.set('');
-    this.passwordNotice.set('');
 
     this.api
       .changePassword({ currentPassword: v.currentPassword, newPassword: v.newPassword })
@@ -136,7 +136,7 @@ export class Profile implements OnInit {
         next: () => {
           this.savingPassword.set(false);
           this.passwordForm.reset();
-          this.passwordNotice.set('Your password was changed.');
+          this.toast.success('Your password was changed.');
         },
         error: (err) => {
           this.savingPassword.set(false);

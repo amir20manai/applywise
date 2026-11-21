@@ -26,11 +26,6 @@
   <div class="alert" role="alert">{{ summaryError() }}</div>
 }
 
-@if (notice()) {
-  <div class="notice" role="status">
-    {{ notice() }} <a routerLink="/applications">View your applications</a>
-  </div>
-}
 
 @if (loading()) {
   <p class="muted">Loading job offers...</p>

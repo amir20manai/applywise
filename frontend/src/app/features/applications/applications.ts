@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ConfirmService } from '../../core/services/confirm';
 
+import { ToastService } from '../../core/services/toast';
 import { ApplicationApi } from '../../core/services/application-api';
 import { AiApi } from '../../core/services/ai-api';
 import { Application, ApplicationStatus, STATUSES } from '../../core/models/application.model';
@@ -17,7 +18,8 @@ import { FollowUpPurpose, LetterLanguage } from '../../core/models/ai.model';
 export class Applications implements OnInit {
   private api = inject(ApplicationApi);
   private ai = inject(AiApi);
-    private confirmDialog = inject(ConfirmService);
+  private confirmDialog = inject(ConfirmService);
+  private toast = inject(ToastService);
 
   statuses = STATUSES;
   items = signal<Application[]>([]);
@@ -62,7 +64,6 @@ export class Applications implements OnInit {
 
   changeStatus(app: Application, event: Event): void {
     const status = (event.target as HTMLSelectElement).value as ApplicationStatus;
-    this.error.set('');
 
     this.api.updateStatus(app.id, status).subscribe({
       next: (updated) => {
@@ -74,7 +75,7 @@ export class Applications implements OnInit {
         );
       },
       error: (err) => {
-        this.error.set(err.error?.message ?? 'Could not update the status. Try again.');
+        this.toast.error(err.error?.message ?? 'Could not update the status. Try again.');
         this.load();
       },
     });
@@ -95,9 +96,10 @@ export class Applications implements OnInit {
         if (this.mailFor() === app.id) {
           this.mailFor.set(null);
         }
+        this.toast.success('Application deleted.');
       },
       error: (err) =>
-        this.error.set(err.error?.message ?? 'Could not delete the application. Try again.'),
+        this.toast.error(err.error?.message ?? 'Could not delete the application. Try again.'),
     });
   }
 

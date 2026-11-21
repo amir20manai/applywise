@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { ToastService } from '../../../core/services/toast';
 import { ConfirmService } from '../../../core/services/confirm';
 import { JobOfferApi } from '../../../core/services/job-offer-api';
 import { CompanyApi } from '../../../core/services/company-api';
@@ -22,7 +23,8 @@ export class ManageOffers implements OnInit {
   private api = inject(JobOfferApi);
   private companyApi = inject(CompanyApi);
   private ai = inject(AiApi);
-    private confirmDialog = inject(ConfirmService);
+  private confirmDialog = inject(ConfirmService);
+  private toast = inject(ToastService);
 
   items = signal<JobOffer[]>([]);
   companies = signal<Company[]>([]);
@@ -194,7 +196,7 @@ export class ManageOffers implements OnInit {
         this.saving.set(false);
         this.showForm.set(false);
         this.editingId.set(null);
-        this.notice.set(`${saved.title} saved.`);
+        this.toast.success(`${saved.title} saved.`);
         this.load();
       },
       error: (err) => {
@@ -218,16 +220,13 @@ export class ManageOffers implements OnInit {
     });
     if (!confirmed) return;
 
-    this.error.set('');
-    this.notice.set('');
-
     this.api.delete(offer.id).subscribe({
       next: () => {
         this.items.update((list) => list.filter((o) => o.id !== offer.id));
-        this.notice.set(`${offer.title} deleted.`);
+        this.toast.success(`${offer.title} deleted.`);
       },
       // Le backend refuse si des candidatures sont liées à cette offre (409)
-      error: (err) => this.error.set(err.error?.message ?? 'Could not delete the offer.'),
+      error: (err) => this.toast.error(err.error?.message ?? 'Could not delete the offer.'),
     });
   }
 

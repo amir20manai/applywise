@@ -10,10 +10,6 @@
   <div class="alert" role="alert">{{ error() }}</div>
 }
 
-@if (notice()) {
-  <div class="notice" role="status">{{ notice() }}</div>
-}
-
 @if (showForm()) {
   <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <h2>{{ editingId() === null ? 'New company' : 'Edit company' }}</h2>

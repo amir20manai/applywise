@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ConfirmService } from '../../core/services/confirm';
 
+import { ToastService } from '../../core/services/toast';
 import { InterviewApi } from '../../core/services/interview-api';
 import { ApplicationApi } from '../../core/services/application-api';
 import { AiApi } from '../../core/services/ai-api';
@@ -27,6 +28,7 @@ export class Interviews implements OnInit {
   private applicationsApi = inject(ApplicationApi);
   private ai = inject(AiApi);
   private confirmDialog = inject(ConfirmService);
+  private toast = inject(ToastService);
 
   statuses = INTERVIEW_STATUSES;
   items = signal<Interview[]>([]);
@@ -120,13 +122,12 @@ export class Interviews implements OnInit {
 
   changeStatus(interview: Interview, event: Event): void {
     const status = (event.target as HTMLSelectElement).value as InterviewStatus;
-    this.error.set('');
 
     this.api.updateStatus(interview.id, status).subscribe({
       next: (updated) =>
         this.items.update((list) => list.map((i) => (i.id === updated.id ? updated : i))),
       error: (err) => {
-        this.error.set(err.error?.message ?? 'Could not update the status. Try again.');
+        this.toast.error(err.error?.message ?? 'Could not update the status. Try again.');
         this.load();
       },
     });
@@ -145,8 +146,9 @@ export class Interviews implements OnInit {
       next: () => {
         this.items.update((list) => list.filter((i) => i.id !== interview.id));
         this.hidePrep(interview.id);
+        this.toast.success('Interview deleted.');
       },
-      error: (err) => this.error.set(err.error?.message ?? 'Could not delete the interview.'),
+      error: (err) => this.toast.error(err.error?.message ?? 'Could not delete the interview.'),
     });
   }
 
