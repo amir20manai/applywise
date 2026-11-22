@@ -65,6 +65,55 @@ export class Dashboard implements OnInit {
   // Les 5 candidatures les plus récentes (le backend les renvoie triées)
   recent = computed(() => this.applications().slice(0, 5));
 
+  // ---------- Premiers pas (candidats seulement) ----------
+  steps = computed(() => {
+    const s = this.stats();
+    return [
+      {
+        label: 'Upload your CV',
+        hint: 'PDF, DOC or DOCX. It is attached to the applications you send.',
+        action: 'Upload CV',
+        link: '/resumes',
+        done: (s?.resumesCount ?? 0) > 0,
+      },
+      {
+        label: 'Apply to a job offer',
+        hint: 'Browse the open roles, or save one you found on another site.',
+        action: 'Browse offers',
+        link: '/job-offers',
+        done: (s?.totalApplications ?? 0) > 0,
+      },
+      {
+        label: 'Plan your first interview',
+        hint: 'Add the date and the meeting link as soon as a recruiter replies.',
+        action: 'Add interview',
+        link: '/interviews',
+        done: this.interviews().length > 0,
+      },
+    ];
+  });
+
+  doneCount = computed(() => this.steps().filter((step) => step.done).length);
+  firstOpen = computed(() => this.steps().findIndex((step) => !step.done));
+
+  // La liste disparaît toute seule quand les 3 étapes sont faites
+  showChecklist = computed(
+    () =>
+      !this.auth.isAdmin() &&
+      this.stats() !== null &&
+      !this.interviewsLoading() &&
+      this.doneCount() < this.steps().length,
+  );
+
+  // Compte tout neuf: la liste de départ suffit, on cache les deux boîtes vides
+  fresh = computed(
+    () =>
+      this.showChecklist() &&
+      !this.applicationsLoading() &&
+      this.recent().length === 0 &&
+      this.upcoming().length === 0,
+  );
+
   ngOnInit(): void {
     this.api.getStats().subscribe({
       next: (stats) => {

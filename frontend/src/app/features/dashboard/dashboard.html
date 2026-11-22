@@ -1,13 +1,64 @@
 <header class="page-head">
   <div>
     <h1>Hello {{ auth.user()?.firstName }}</h1>
-    <p>Here is where your job search stands today.</p>
+    <p>
+      {{
+        showChecklist()
+          ? 'Three steps and your job search is set up.'
+          : 'Here is where your job search stands today.'
+      }}
+    </p>
   </div>
   <a class="btn btn-primary" routerLink="/applications/new">Add application</a>
 </header>
 
 @if (error()) {
   <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (showChecklist()) {
+  <section class="panel checklist" aria-labelledby="start-title">
+    <div class="checklist-head">
+      <h2 id="start-title">Get started</h2>
+      <span class="progress">{{ doneCount() }} of {{ steps().length }} done</span>
+    </div>
+
+    <ol class="steps">
+      @for (step of steps(); track step.label; let i = $index) {
+        <li class="step" [class.done]="step.done">
+          <span class="marker" aria-hidden="true">
+            @if (step.done) {
+              <svg viewBox="0 0 20 20" width="16" height="16">
+                <path d="M5 10.5l3.2 3.2L15 6.8" fill="none" stroke="currentColor" stroke-width="2.4"
+                      stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            } @else {
+              {{ i + 1 }}
+            }
+          </span>
+
+          <div class="step-text">
+            <strong>
+              {{ step.label }}
+              @if (step.done) { <span class="sr-only">(done)</span> }
+            </strong>
+            @if (!step.done) {
+              <span>{{ step.hint }}</span>
+            }
+          </div>
+
+          @if (!step.done) {
+            <a class="btn btn-sm"
+               [class.btn-primary]="i === firstOpen()"
+               [class.btn-secondary]="i !== firstOpen()"
+               [routerLink]="step.link">
+              {{ step.action }}
+            </a>
+          }
+        </li>
+      }
+    </ol>
+  </section>
 }
 
 @if (stats(); as s) {
@@ -26,14 +77,10 @@
     </div>
   </section>
 
-  <section class="panel breakdown">
-    <h2>Applications by status</h2>
+  @if (s.totalApplications > 0) {
+    <section class="panel breakdown">
+      <h2>Applications by status</h2>
 
-    @if (s.totalApplications === 0) {
-      <p class="empty-text">
-        You have not added any application yet. Once you do, the breakdown appears here.
-      </p>
-    } @else {
       <div class="bar" role="img" aria-label="Applications by status">
         @for (seg of segments(); track seg.key) {
           <span [style.width.%]="seg.percent" [style.background]="seg.color"></span>
@@ -49,76 +96,78 @@
           </li>
         }
       </ul>
-    }
-  </section>
+    </section>
+  }
 } @else if (loading()) {
   <p class="muted">Loading your dashboard...</p>
 }
 
-<div class="columns">
-  <section class="panel" aria-labelledby="upcoming-title">
-    <div class="box-head">
-      <h2 id="upcoming-title">Upcoming interviews</h2>
-      <a class="text-link" routerLink="/interviews">View all</a>
-    </div>
+@if (!fresh()) {
+  <div class="columns">
+    <section class="panel" aria-labelledby="upcoming-title">
+      <div class="box-head">
+        <h2 id="upcoming-title">Upcoming interviews</h2>
+        <a class="text-link" routerLink="/interviews">View all</a>
+      </div>
 
-    @if (interviewsLoading()) {
-      <p class="muted">Loading...</p>
-    } @else if (interviewsError()) {
-      <p class="error-text">{{ interviewsError() }}</p>
-    } @else if (upcoming().length === 0) {
-      <p class="empty-text">
-        No interview planned.
-        <a class="text-link" routerLink="/interviews">Add one</a> as soon as a recruiter gives you a date.
-      </p>
-    } @else {
-      <ul class="rows">
-        @for (i of upcoming(); track i.id) {
-          <li class="row-item">
-            <div class="when">
-              <strong>{{ i.scheduledAt | date: 'd MMM' }}</strong>
-              <span>{{ i.scheduledAt | date: 'HH:mm' }}</span>
-            </div>
-            <div class="what">
-              <strong>{{ i.title }}</strong>
-              <span>{{ i.jobTitle }} at {{ i.companyName }}</span>
-            </div>
-          </li>
-        }
-      </ul>
-    }
-  </section>
+      @if (interviewsLoading()) {
+        <p class="muted">Loading...</p>
+      } @else if (interviewsError()) {
+        <p class="error-text">{{ interviewsError() }}</p>
+      } @else if (upcoming().length === 0) {
+        <p class="empty-text">
+          No interview planned.
+          <a class="text-link" routerLink="/interviews">Add one</a> as soon as a recruiter gives you a date.
+        </p>
+      } @else {
+        <ul class="rows">
+          @for (i of upcoming(); track i.id) {
+            <li class="row-item">
+              <div class="when">
+                <strong>{{ i.scheduledAt | date: 'd MMM' }}</strong>
+                <span>{{ i.scheduledAt | date: 'HH:mm' }}</span>
+              </div>
+              <div class="what">
+                <strong>{{ i.title }}</strong>
+                <span>{{ i.jobTitle }} at {{ i.companyName }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
 
-  <section class="panel" aria-labelledby="recent-title">
-    <div class="box-head">
-      <h2 id="recent-title">Recent applications</h2>
-      <a class="text-link" routerLink="/applications">View all</a>
-    </div>
+    <section class="panel" aria-labelledby="recent-title">
+      <div class="box-head">
+        <h2 id="recent-title">Recent applications</h2>
+        <a class="text-link" routerLink="/applications">View all</a>
+      </div>
 
-    @if (applicationsLoading()) {
-      <p class="muted">Loading...</p>
-    } @else if (applicationsError()) {
-      <p class="error-text">{{ applicationsError() }}</p>
-    } @else if (recent().length === 0) {
-      <p class="empty-text">
-        Nothing here yet. <a class="text-link" routerLink="/job-offers">Browse job offers</a> or
-        <a class="text-link" routerLink="/applications/new">add an application</a>.
-      </p>
-    } @else {
-      <ul class="rows">
-        @for (a of recent(); track a.id) {
-          <li class="row-item">
-            <div class="what">
-              <strong>{{ a.jobTitle }}</strong>
-              <span>{{ a.companyName }}, {{ a.appliedAt | date: 'd MMM y' }}</span>
-            </div>
-            <span class="pill">
-              <span class="dot" [style.background]="statusColor(a.status)"></span>
-              {{ statusLabel(a.status) }}
-            </span>
-          </li>
-        }
-      </ul>
-    }
-  </section>
-</div>
+      @if (applicationsLoading()) {
+        <p class="muted">Loading...</p>
+      } @else if (applicationsError()) {
+        <p class="error-text">{{ applicationsError() }}</p>
+      } @else if (recent().length === 0) {
+        <p class="empty-text">
+          Nothing here yet. <a class="text-link" routerLink="/job-offers">Browse job offers</a> or
+          <a class="text-link" routerLink="/applications/new">add an application</a>.
+        </p>
+      } @else {
+        <ul class="rows">
+          @for (a of recent(); track a.id) {
+            <li class="row-item">
+              <div class="what">
+                <strong>{{ a.jobTitle }}</strong>
+                <span>{{ a.companyName }}, {{ a.appliedAt | date: 'd MMM y' }}</span>
+              </div>
+              <span class="pill">
+                <span class="dot" [style.background]="statusColor(a.status)"></span>
+                {{ statusLabel(a.status) }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+}

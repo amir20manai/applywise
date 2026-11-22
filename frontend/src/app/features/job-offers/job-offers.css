@@ -130,3 +130,17 @@
     align-items: flex-start;
   }
 }
+.info {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  color: #34465a;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  background: var(--ai-tint);
+  border: 1px solid var(--ai-line);
+  border-radius: var(--radius-control);
+}
+
+.info .text-link {
+  margin-left: 6px;
+}

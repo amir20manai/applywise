@@ -25,14 +25,27 @@
 @if (summaryError()) {
   <div class="alert" role="alert">{{ summaryError() }}</div>
 }
-
+@if (resumesLoaded() && defaultResumeId() === null) {
+  <div class="info" role="note">
+    You have not uploaded a CV yet, so your applications will be sent without one.
+    <a class="text-link" routerLink="/resumes">Upload a CV</a>
+  </div>
+}
 
 @if (loading()) {
   <p class="muted">Loading job offers...</p>
 } @else if (items().length === 0) {
   <div class="empty">
-    <p>No open offer matches your search.</p>
-    <p class="hint">Try a shorter title or clear the location.</p>
+    @if (searched()) {
+      <p>No open offer matches your search.</p>
+      <p class="hint">Try a shorter title or clear the location.</p>
+    } @else {
+      <p>No job offer has been published yet.</p>
+      <p class="hint">
+        You can still save a role you found on another site.
+        <a class="text-link" routerLink="/applications/new">Add an application</a>
+      </p>
+    }
   </div>
 } @else {
   <ul class="list-panel">
