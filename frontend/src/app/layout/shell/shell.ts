@@ -28,6 +28,8 @@ export class Shell implements OnInit, OnDestroy {
   // Chaque nouvelle page = une ligne ici
   private allItems: NavItem[] = [
     { label: 'Overview', path: '/admin/overview', audience: 'admin' },
+    { label: 'Applications', path: '/admin/applications', audience: 'admin' },
+    { label: 'Interviews', path: '/admin/interviews', audience: 'admin' },
     { label: 'Companies', path: '/admin/companies', audience: 'admin' },
     { label: 'Manage offers', path: '/admin/job-offers', audience: 'admin' },
 
@@ -57,7 +59,7 @@ export class Shell implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Les notifications concernent les candidats (changement de status, rappels)
+    // Les notifications concernent les candidats (changement de status, entretiens, rappels)
     if (this.auth.isAdmin()) return;
 
     this.notifications.refreshUnread();

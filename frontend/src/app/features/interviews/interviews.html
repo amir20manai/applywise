@@ -1,19 +1,16 @@
 <header class="page-head">
   <div>
     <h1>Interviews</h1>
-    <p>Keep every interview date, place and link in one list.</p>
+    <p>The interviews recruiters scheduled for your applications.</p>
   </div>
 
-  <div class="page-actions">
-    <label class="lang">
-      Prep language
-      <select class="input input-auto" [value]="prepLanguage()" (change)="setPrepLanguage($event)">
-        <option value="en">English</option>
-        <option value="fr">French</option>
-      </select>
-    </label>
-    <button type="button" class="btn btn-primary" (click)="openForm()">Add interview</button>
-  </div>
+  <label class="lang">
+    Prep language
+    <select class="input input-auto" [value]="prepLanguage()" (change)="setPrepLanguage($event)">
+      <option value="en">English</option>
+      <option value="fr">French</option>
+    </select>
+  </label>
 </header>
 
 @if (error()) {
@@ -24,83 +21,16 @@
   <div class="alert" role="alert">{{ prepError() }}</div>
 }
 
-@if (showForm()) {
-  <form class="panel" [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <h2>New interview</h2>
-
-    @if (applications().length === 0) {
-      <p class="muted">
-        An interview belongs to an application.
-        <a class="text-link" routerLink="/applications/new">Add an application</a> first.
-      </p>
-    } @else {
-      <div class="field">
-        <label for="applicationId">Application</label>
-        <select id="applicationId" class="input" formControlName="applicationId"
-                [class.invalid]="f.applicationId.touched && f.applicationId.invalid">
-          <option [ngValue]="null">Choose an application</option>
-          @for (a of applications(); track a.id) {
-            <option [ngValue]="a.id">{{ a.jobTitle }} at {{ a.companyName }}</option>
-          }
-        </select>
-        @if (f.applicationId.touched && f.applicationId.invalid) {
-          <span class="field-error">Choose the application this interview belongs to.</span>
-        }
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="title">Title</label>
-          <input id="title" class="input" type="text" formControlName="title"
-                 placeholder="Technical interview"
-                 [class.invalid]="f.title.touched && f.title.invalid" />
-          @if (f.title.touched && f.title.invalid) {
-            <span class="field-error">Enter a title.</span>
-          }
-        </div>
-
-        <div class="field">
-          <label for="scheduledAt">Date and time</label>
-          <input id="scheduledAt" class="input" type="datetime-local" formControlName="scheduledAt" />
-        </div>
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label for="location">Location</label>
-          <input id="location" class="input" type="text" formControlName="location"
-                 placeholder="Office in Lac 2, Tunis" />
-        </div>
-
-        <div class="field">
-          <label for="meetingLink">Meeting link</label>
-          <input id="meetingLink" class="input" type="url" formControlName="meetingLink"
-                 placeholder="https://meet.google.com/..." />
-        </div>
-      </div>
-
-      <div class="field">
-        <label for="notes">Notes</label>
-        <textarea id="notes" class="input" rows="3" formControlName="notes"
-                  placeholder="Who you meet, what to prepare..."></textarea>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="saving()">
-          {{ saving() ? 'Saving...' : 'Save interview' }}
-        </button>
-        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-      </div>
-    }
-  </form>
-}
-
 @if (loading()) {
   <p class="muted">Loading your interviews...</p>
 } @else if (items().length === 0) {
   <div class="empty">
-    <p>You have no interview yet.</p>
-    <p class="hint">Add one as soon as a recruiter gives you a date.</p>
+    <p>No interview yet.</p>
+    <p class="hint">
+      When a recruiter schedules an interview for one of your applications, it appears here and
+      you get a notification.
+      <a class="text-link" routerLink="/job-offers">Browse job offers</a>
+    </p>
   </div>
 } @else {
   <ul class="list-panel">
@@ -111,7 +41,7 @@
             <strong>{{ i.scheduledAt | date: 'd MMM' }}</strong>
             <span>{{ i.scheduledAt | date: 'HH:mm' }}</span>
           } @else {
-            <span>No date yet</span>
+            <span>Date to be confirmed</span>
           }
         </div>
 
@@ -125,28 +55,21 @@
             }
           </span>
           @if (i.notes) {
-            <p class="notes">{{ i.notes }}</p>
+            <p class="notes"><strong>Note from the recruiter:</strong> {{ i.notes }}</p>
           }
         </div>
 
         <div class="actions">
-          <label class="status">
+          <span class="pill">
             <span class="dot" [style.background]="color(i.status)"></span>
-            <select class="input" [value]="i.status" (change)="changeStatus(i, $event)"
-                    [attr.aria-label]="'Status of ' + i.title">
-              @for (s of statuses; track s.key) {
-                <option [value]="s.key" [selected]="s.key === i.status">{{ s.label }}</option>
-              }
-            </select>
-          </label>
+            {{ label(i.status) }}
+          </span>
 
           <button type="button" class="btn btn-ai btn-sm"
                   [disabled]="prepLoadingId() !== null"
                   (click)="prepare(i)">
             {{ prepLoadingId() === i.id ? 'Preparing...' : 'Prepare with AI' }}
           </button>
-
-          <button type="button" class="btn btn-danger btn-sm" (click)="remove(i)">Delete</button>
         </div>
 
         @if (prepLoadingId() === i.id) {
@@ -163,7 +86,7 @@
             </div>
             <p class="prep-text">{{ text }}</p>
             <p class="ai-note">
-              Written by AI from the job title, the company and your notes. Check it before you rely on it.
+              Written by AI from the job title, the company and the interview notes. Check it before you rely on it.
             </p>
           </section>
         }

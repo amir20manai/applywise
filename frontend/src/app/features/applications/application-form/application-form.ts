@@ -23,7 +23,7 @@ export class ApplicationForm implements OnInit {
   private applications = inject(ApplicationApi);
   private resumeApi = inject(ResumeApi);
   private ai = inject(AiApi);
-    private confirmDialog = inject(ConfirmService);
+  private confirmDialog = inject(ConfirmService);
 
   statuses = STATUSES;
   resumes = signal<Resume[]>([]);
@@ -31,6 +31,7 @@ export class ApplicationForm implements OnInit {
   loading = signal(false);
   saving = signal(false);
   errorMessage = signal('');
+  statusLocked = signal(false);
 
   generating = signal(false);
   aiError = signal('');
@@ -185,6 +186,11 @@ export class ApplicationForm implements OnInit {
           notes: app.notes ?? '',
           coverLetter: app.coverLetter ?? '',
         });
+        // Offre de la plateforme: c'est le recruteur qui gère le status
+        if (app.jobOfferId !== null) {
+          this.f.status.disable();
+          this.statusLocked.set(true);
+        }
         this.loading.set(false);
       },
       error: (err) => {

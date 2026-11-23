@@ -58,18 +58,31 @@
             <td>{{ app.appliedAt | date: 'd MMM y' }}</td>
             <td class="cv">{{ app.resumeFileName || '-' }}</td>
             <td>
-              <label class="status">
-                <span class="dot" [style.background]="color(app.status)"></span>
-                <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
-                        [attr.aria-label]="'Status of ' + app.jobTitle">
-                  @for (s of statuses; track s.key) {
-                    <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
-                  }
-                </select>
-              </label>
+              @if (app.jobOfferId === null) {
+                <label class="status">
+                  <span class="dot" [style.background]="color(app.status)"></span>
+                  <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
+                          [attr.aria-label]="'Status of ' + app.jobTitle">
+                    @for (s of statuses; track s.key) {
+                      <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
+                    }
+                  </select>
+                </label>
+              } @else {
+                <span class="pill">
+                  <span class="dot" [style.background]="color(app.status)"></span>
+                  {{ statusLabel(app.status) }}
+                </span>
+              }
             </td>
             <td>
               <div class="cell-actions">
+                @if (app.jobOfferId !== null && app.status !== 'WITHDRAWN') {
+                  <button type="button" class="btn btn-secondary btn-sm" (click)="withdraw(app)"
+                          [attr.aria-label]="'Withdraw ' + app.jobTitle">
+                    Withdraw
+                  </button>
+                }
                 <button type="button" class="btn btn-ai btn-sm"
                         [attr.aria-expanded]="mailFor() === app.id"
                         (click)="toggleMail(app)">

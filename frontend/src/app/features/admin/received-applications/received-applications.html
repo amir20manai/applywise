@@ -1,0 +1,208 @@
+<header class="page-head">
+  <div>
+    <h1>Applications</h1>
+    <p>Candidates who applied to your job offers.</p>
+  </div>
+</header>
+
+<div class="filters" role="group" aria-label="Filter by status">
+  <button type="button" [class.on]="filter() === null" [attr.aria-pressed]="filter() === null"
+          (click)="setFilter(null)">
+    All
+  </button>
+  @for (s of statuses; track s.key) {
+    <button type="button" [class.on]="filter() === s.key" [attr.aria-pressed]="filter() === s.key"
+            (click)="setFilter(s.key)">
+      <span class="dot" [style.background]="s.color"></span>{{ s.label }}
+    </button>
+  }
+</div>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading the applications...</p>
+} @else if (items().length === 0) {
+  <div class="empty">
+    @if (filter()) {
+      <p>No application with this status.</p>
+    } @else {
+      <p>No candidate has applied yet.</p>
+      <p class="hint">
+        Applications to your job offers appear here as soon as candidates apply.
+        <a class="text-link" routerLink="/admin/job-offers">Manage offers</a>
+      </p>
+    }
+  </div>
+} @else {
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Candidate</th>
+          <th scope="col">Role</th>
+          <th scope="col">Applied</th>
+          <th scope="col">CV</th>
+          <th scope="col">Status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (app of items(); track app.id) {
+          <tr>
+            <td>
+              <strong>{{ app.candidateName }}</strong>
+              <span class="cell-sub">{{ app.candidateEmail }}</span>
+            </td>
+            <td>
+              <strong>{{ app.jobTitle }}</strong>
+              <span class="cell-sub">{{ app.companyName }}</span>
+            </td>
+            <td>{{ app.appliedAt | date: 'd MMM y' }}</td>
+            <td>
+              @if (app.resumeId) {
+                <button type="button" class="btn btn-secondary btn-sm"
+                        [attr.aria-label]="'Download the CV of ' + app.candidateName"
+                        (click)="downloadResume(app)">
+                  Download
+                </button>
+              } @else {
+                <span class="muted">No CV</span>
+              }
+            </td>
+            <td>
+              <label class="status">
+                <span class="dot" [style.background]="color(app.status)"></span>
+                <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
+                        [attr.aria-label]="'Status of ' + app.candidateName">
+                  @for (s of statuses; track s.key) {
+                    <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
+                  }
+                </select>
+              </label>
+            </td>
+            <td>
+              <div class="cell-actions">
+                <button type="button" class="btn btn-secondary btn-sm"
+                        [attr.aria-expanded]="openId() === app.id && mode() === 'details'"
+                        (click)="toggle(app, 'details')">
+                  Details
+                </button>
+                <button type="button" class="btn btn-primary btn-sm"
+                        [attr.aria-expanded]="openId() === app.id && mode() === 'interview'"
+                        (click)="toggle(app, 'interview')">
+                  Schedule interview
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          @if (openId() === app.id) {
+            <tr class="panel-row">
+              <td colspan="6">
+                @if (mode() === 'details') {
+                  <section class="sub-panel" [attr.aria-label]="'Details of ' + app.candidateName">
+                    <dl class="facts">
+                      <div>
+                        <dt>Email</dt>
+                        <dd>
+                          <a class="text-link" [href]="'mailto:' + app.candidateEmail">{{ app.candidateEmail }}</a>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Phone</dt>
+                        <dd>{{ app.candidatePhone || 'Not provided' }}</dd>
+                      </div>
+                      <div>
+                        <dt>Location</dt>
+                        <dd>{{ app.location || 'Not provided' }}</dd>
+                      </div>
+                      <div>
+                        <dt>Interviews</dt>
+                        <dd>
+                          {{ app.interviewCount }}
+                          @if (app.interviewCount > 0) {
+                            <a class="text-link" routerLink="/admin/interviews">View</a>
+                          }
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <h3>Cover letter</h3>
+                    @if (app.coverLetter) {
+                      <p class="letter">{{ app.coverLetter }}</p>
+                    } @else {
+                      <p class="muted">The candidate did not write a cover letter.</p>
+                    }
+                  </section>
+                } @else {
+                  <form class="sub-panel" [formGroup]="form" (ngSubmit)="scheduleInterview(app)" novalidate>
+                    <h3>Schedule an interview with {{ app.candidateName }}</h3>
+                    <p class="help-note">
+                      The candidate gets a notification. If the application was still waiting for an
+                      answer, it moves to Interview.
+                    </p>
+
+                    @if (formError()) {
+                      <div class="alert" role="alert">{{ formError() }}</div>
+                    }
+
+                    <div class="field-row">
+                      <div class="field">
+                        <label for="iv-title">Title</label>
+                        <input id="iv-title" class="input" type="text" formControlName="title"
+                               placeholder="Technical interview"
+                               [class.invalid]="f.title.touched && f.title.invalid" />
+                        @if (f.title.touched && f.title.invalid) {
+                          <span class="field-error">Enter a title.</span>
+                        }
+                      </div>
+
+                      <div class="field">
+                        <label for="iv-date">Date and time</label>
+                        <input id="iv-date" class="input" type="datetime-local" formControlName="scheduledAt" />
+                      </div>
+                    </div>
+
+                    <div class="field-row">
+                      <div class="field">
+                        <label for="iv-location">Location</label>
+                        <input id="iv-location" class="input" type="text" formControlName="location"
+                               placeholder="Office in Lac 2, Tunis" />
+                      </div>
+
+                      <div class="field">
+                        <label for="iv-link">Meeting link</label>
+                        <input id="iv-link" class="input" type="url" formControlName="meetingLink"
+                               placeholder="https://meet.google.com/..." />
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label for="iv-notes">Note for the candidate (optional)</label>
+                      <textarea id="iv-notes" class="input" rows="3" formControlName="notes"
+                                placeholder="Who they meet, what to prepare, what to bring..."
+                                [class.invalid]="f.notes.invalid"></textarea>
+                      <span class="field-help">The candidate can read this note.</span>
+                    </div>
+
+                    <div class="form-actions">
+                      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                        {{ saving() ? 'Saving...' : 'Schedule interview' }}
+                      </button>
+                      <button type="button" class="btn btn-secondary" (click)="toggle(app, 'interview')">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                }
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -116,8 +116,8 @@
         <p class="error-text">{{ interviewsError() }}</p>
       } @else if (upcoming().length === 0) {
         <p class="empty-text">
-          No interview planned.
-          <a class="text-link" routerLink="/interviews">Add one</a> as soon as a recruiter gives you a date.
+          No interview planned yet. When a recruiter schedules one, it appears here and you
+          get a notification.
         </p>
       } @else {
         <ul class="rows">

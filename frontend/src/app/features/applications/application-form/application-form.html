@@ -55,6 +55,9 @@
             <option [value]="s.key">{{ s.label }}</option>
           }
         </select>
+        @if (statusLocked()) {
+          <span class="field-help">The recruiter manages the status of this application.</span>
+        }
       </div>
     </div>
 

@@ -137,6 +137,7 @@ public class ApplicationService {
         application.setCoverLetter(request.getCoverLetter());
 
         if (request.getStatus() != null) {
+            checkCandidateMayChangeStatus(application, request.getStatus());
             changeStatus(application, request.getStatus());
         }
         if (request.getResumeId() != null) {
@@ -158,6 +159,7 @@ public class ApplicationService {
         User user = findUser(email);
         Application application = findOwnedApplication(user, id);
 
+        checkCandidateMayChangeStatus(application, status);
         changeStatus(application, status);
 
         return toResponse(application);
@@ -181,6 +183,17 @@ public class ApplicationService {
     }
 
     // ---------- méthodes privées ----------
+    // Pour une offre de la plateforme, c'est le recruteur qui gère le status.
+    // Le candidat peut seulement retirer sa candidature.
+    private void checkCandidateMayChangeStatus(Application application, ApplicationStatus newStatus) {
+        if (application.getJobOffer() == null
+                || newStatus == application.getStatus()
+                || newStatus == ApplicationStatus.WITHDRAWN) {
+            return;
+        }
+        throw new BadRequestException(
+                "The recruiter manages the status of this application. You can only withdraw it.");
+    }
     // Change le status et crée une notification (seulement si le status a vraiment changé)
     private void changeStatus(Application application, ApplicationStatus newStatus) {
 

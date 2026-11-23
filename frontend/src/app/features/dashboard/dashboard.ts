@@ -83,25 +83,17 @@ export class Dashboard implements OnInit {
         link: '/job-offers',
         done: (s?.totalApplications ?? 0) > 0,
       },
-      {
-        label: 'Plan your first interview',
-        hint: 'Add the date and the meeting link as soon as a recruiter replies.',
-        action: 'Add interview',
-        link: '/interviews',
-        done: this.interviews().length > 0,
-      },
     ];
   });
 
   doneCount = computed(() => this.steps().filter((step) => step.done).length);
   firstOpen = computed(() => this.steps().findIndex((step) => !step.done));
 
-  // La liste disparaît toute seule quand les 3 étapes sont faites
+  // La liste disparaît toute seule quand les étapes sont faites
   showChecklist = computed(
     () =>
       !this.auth.isAdmin() &&
       this.stats() !== null &&
-      !this.interviewsLoading() &&
       this.doneCount() < this.steps().length,
   );
 

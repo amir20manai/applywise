@@ -17,6 +17,8 @@ import { Interviews } from './features/interviews/interviews';
 import { Notifications } from './features/notifications/notifications';
 import { Profile } from './features/profile/profile';
 import { Overview } from './features/admin/overview/overview';
+import { ReceivedApplications } from './features/admin/received-applications/received-applications';
+import { ManageInterviews } from './features/admin/manage-interviews/manage-interviews';
 import { Companies } from './features/admin/companies/companies';
 import { ManageOffers } from './features/admin/manage-offers/manage-offers';
 
@@ -54,12 +56,18 @@ export const routes: Routes = [
       { path: 'notifications', component: Notifications, title: title('Notifications') },
       { path: 'profile', component: Profile, title: title('Profile') },
 
-      // Admin pages
+      // Admin (recruiter) pages
       {
         path: 'admin',
         canActivate: [adminGuard],
         children: [
           { path: 'overview', component: Overview, title: title('Overview') },
+          {
+            path: 'applications',
+            component: ReceivedApplications,
+            title: title('Applications received'),
+          },
+          { path: 'interviews', component: ManageInterviews, title: title('Interviews') },
           { path: 'companies', component: Companies, title: title('Companies') },
           { path: 'job-offers', component: ManageOffers, title: title('Manage offers') },
           { path: '', pathMatch: 'full', redirectTo: 'overview' },

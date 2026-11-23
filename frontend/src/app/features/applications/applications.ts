@@ -102,6 +102,34 @@ export class Applications implements OnInit {
         this.toast.error(err.error?.message ?? 'Could not delete the application. Try again.'),
     });
   }
+    statusLabel(status: ApplicationStatus): string {
+    return STATUSES.find((s) => s.key === status)?.label ?? status;
+  }
+
+  // Candidature envoyée à une offre de la plateforme: le candidat peut seulement la retirer
+  async withdraw(app: Application): Promise<void> {
+    const confirmed = await this.confirmDialog.ask({
+      title: 'Withdraw this application?',
+      message: `The recruiter at ${app.companyName} will see that you withdrew your application for "${app.jobTitle}".`,
+      confirmLabel: 'Withdraw',
+      danger: true,
+    });
+    if (!confirmed) return;
+
+    this.api.updateStatus(app.id, 'WITHDRAWN').subscribe({
+      next: (updated) => {
+        const active = this.filter();
+        this.items.update((list) =>
+          active && updated.status !== active
+            ? list.filter((a) => a.id !== updated.id)
+            : list.map((a) => (a.id === updated.id ? updated : a)),
+        );
+        this.toast.success('Application withdrawn.');
+      },
+      error: (err) =>
+        this.toast.error(err.error?.message ?? 'Could not withdraw the application. Try again.'),
+    });
+  }
 
   // ---------- Assistant email ----------
 
