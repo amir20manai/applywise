@@ -19,6 +19,8 @@ public interface JobOfferRepository extends JpaRepository<JobOffer, Long> {
 
     List<JobOffer> findByCompanyId(Long companyId);
 
+    long countByStatus(OfferStatus status);
+
     // Charge l'offre avec sa company en une seule requête
     @Query("select o from JobOffer o left join fetch o.company where o.id = :id")
     Optional<JobOffer> findWithCompanyById(@Param("id") Long id);

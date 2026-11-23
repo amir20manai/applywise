@@ -5,10 +5,12 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { NotificationApi } from '../../core/services/notification-api';
 
+type Audience = 'all' | 'candidate' | 'admin';
+
 interface NavItem {
   label: string;
   path: string;
-  adminOnly?: boolean;
+  audience: Audience;
 }
 
 @Component({
@@ -25,20 +27,29 @@ export class Shell implements OnInit, OnDestroy {
 
   // Chaque nouvelle page = une ligne ici
   private allItems: NavItem[] = [
-    { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Job offers', path: '/job-offers' },
-    { label: 'Applications', path: '/applications' },
-    { label: 'Interviews', path: '/interviews' },
-    { label: 'My CVs', path: '/resumes' },
-    { label: 'Notifications', path: '/notifications' },
-    { label: 'Profile', path: '/profile' },
-    { label: 'Companies', path: '/admin/companies', adminOnly: true },
-    { label: 'Manage offers', path: '/admin/job-offers', adminOnly: true },
+    { label: 'Overview', path: '/admin/overview', audience: 'admin' },
+    { label: 'Companies', path: '/admin/companies', audience: 'admin' },
+    { label: 'Manage offers', path: '/admin/job-offers', audience: 'admin' },
+
+    { label: 'Dashboard', path: '/dashboard', audience: 'candidate' },
+    { label: 'Job offers', path: '/job-offers', audience: 'candidate' },
+    { label: 'Applications', path: '/applications', audience: 'candidate' },
+    { label: 'Interviews', path: '/interviews', audience: 'candidate' },
+    { label: 'My CVs', path: '/resumes', audience: 'candidate' },
+    { label: 'Notifications', path: '/notifications', audience: 'candidate' },
+
+    { label: 'Profile', path: '/profile', audience: 'all' },
   ];
 
-  // Les pages admin ne sont visibles que pour un ADMIN
+  // L'admin voit ses pages, le candidat voit les siennes
   get nav(): NavItem[] {
-    return this.allItems.filter((item) => !item.adminOnly || this.auth.isAdmin());
+    const admin = this.auth.isAdmin();
+    return this.allItems.filter(
+      (item) =>
+        item.audience === 'all' ||
+        (item.audience === 'admin' && admin) ||
+        (item.audience === 'candidate' && !admin),
+    );
   }
 
   get initial(): string {
@@ -46,6 +57,9 @@ export class Shell implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Les notifications concernent les candidats (changement de status, rappels)
+    if (this.auth.isAdmin()) return;
+
     this.notifications.refreshUnread();
     // Vérifie les nouvelles notifications chaque minute
     this.timer = setInterval(() => this.notifications.refreshUnread(), 60_000);

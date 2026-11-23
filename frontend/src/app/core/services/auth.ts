@@ -59,6 +59,11 @@ export class AuthService {
     return this.getToken() !== null;
   }
 
+  // Page d'accueil selon le rôle (un seul endroit à modifier)
+  homePath(): string {
+    return this.isAdmin() ? '/admin/overview' : '/dashboard';
+  }
+
   private saveSession(res: AuthResponse): void {
     const { token, tokenType, ...user } = res;
     localStorage.setItem(TOKEN_KEY, token);

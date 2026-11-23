@@ -1,0 +1,95 @@
+<header class="page-head">
+  <div>
+    <h1>Overview</h1>
+    <p>Activity across ApplyWise.</p>
+  </div>
+
+  <div class="page-actions">
+    <a class="btn btn-secondary" routerLink="/admin/companies">Manage companies</a>
+    <a class="btn btn-primary" routerLink="/admin/job-offers">Manage offers</a>
+  </div>
+</header>
+
+@if (error()) {
+  <div class="alert" role="alert">{{ error() }}</div>
+}
+
+@if (stats(); as s) {
+  <section class="figures" aria-label="Key figures">
+    <div class="figure">
+      <strong>{{ s.candidates }}</strong>
+      <span>Candidates</span>
+    </div>
+    <div class="figure">
+      <strong>{{ s.companies }}</strong>
+      <span>Companies</span>
+    </div>
+    <div class="figure">
+      <strong>{{ s.activeOffers }}</strong>
+      <span>Open offers</span>
+    </div>
+    <div class="figure">
+      <strong>{{ s.totalApplications }}</strong>
+      <span>Applications</span>
+      <small>{{ s.applicationsLast7Days }} in the last 7 days</small>
+    </div>
+  </section>
+
+  <div class="columns">
+    <section class="panel" aria-labelledby="status-title">
+      <h2 id="status-title">Applications by status</h2>
+
+      @if (s.totalApplications === 0) {
+        <p class="empty-text">
+          No application yet. They appear here as soon as candidates apply to your offers.
+        </p>
+      } @else {
+        <div class="bar" role="img" aria-label="Applications by status">
+          @for (seg of segments(); track seg.key) {
+            <span [style.width.%]="seg.percent" [style.background]="seg.color"></span>
+          }
+        </div>
+
+        <ul class="legend">
+          @for (row of rows(); track row.key) {
+            <li>
+              <span class="dot" [style.background]="row.color"></span>
+              <span>{{ row.label }}</span>
+              <span class="count">{{ row.count }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="top-title">
+      <h2 id="top-title">Most applied offers</h2>
+
+      @if (s.topOffers.length === 0) {
+        <p class="empty-text">
+          No candidate applied to an offer yet.
+          @if (s.activeOffers === 0) {
+            <a class="text-link" routerLink="/admin/job-offers">Publish your first offer</a>
+            to get started.
+          }
+        </p>
+      } @else {
+        <ul class="top-list">
+          @for (o of s.topOffers; track o.id) {
+            <li class="top-item">
+              <div class="what">
+                <strong>{{ o.title }}</strong>
+                <span>{{ o.companyName || 'Company not listed' }}</span>
+              </div>
+              <span class="top-count" [attr.aria-label]="o.applications + ' applications'">
+                {{ o.applications }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+} @else if (loading()) {
+  <p class="muted">Loading the overview...</p>
+}

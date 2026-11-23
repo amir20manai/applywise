@@ -44,7 +44,7 @@ export class Register {
     this.auth
       .register({ ...value, phone: value.phone.trim() || undefined })
       .subscribe({
-        next: () => this.router.navigate(['/dashboard']),
+        next: () => this.router.navigate([this.auth.homePath()]),
         error: (err) => {
           this.loading.set(false);
           const details = err.error?.validationErrors;

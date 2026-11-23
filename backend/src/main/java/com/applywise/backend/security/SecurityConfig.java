@@ -54,6 +54,7 @@ public class SecurityConfig {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 .sessionManagement(session -> session
@@ -78,6 +79,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/error").permitAll()
 
+                        // Espace recruteur: statistiques, candidatures reçues, entretiens
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // AI: la description d'offre est réservée à l'ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/ai/offer-description").hasRole("ADMIN")
+
                         // Job offers
                         .requestMatchers(HttpMethod.GET, "/api/job-offers/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/job-offers/**").hasRole("ADMIN")
@@ -89,9 +96,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/companies/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/companies/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/companies/**").hasRole("ADMIN")
-
-                        // AI: la description d'offre est réservée à l'ADMIN
-                        .requestMatchers(HttpMethod.POST, "/api/ai/offer-description").hasRole("ADMIN")
 
                         // Tout le reste: authentifié
                         .anyRequest().authenticated()

@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  max-width: 960px;
+}
+
+/* ---------- Key figures: a hairline between cells at any width ---------- */
+.figures {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+}
+
+.figure {
+  padding: 22px 26px;
+  background: var(--panel);
+}
+
+.figure strong {
+  display: block;
+  font-size: 2.3rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.figure span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.figure small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* ---------- Two columns ---------- */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.panel {
+  padding-bottom: 12px;
+}
+
+.empty-text {
+  max-width: 48ch;
+  margin: 0 0 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---------- Most applied offers ---------- */
+.top-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.top-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 0;
+  border-top: 1px solid #edf1f5;
+}
+
+.top-item:first-child {
+  padding-top: 4px;
+  border-top: none;
+}
+
+.what {
+  min-width: 0;
+}
+
+.what strong {
+  display: block;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.what span {
+  display: block;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.top-count {
+  flex-shrink: 0;
+  min-width: 32px;
+  padding: 3px 10px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--cobalt-dark);
+  background: var(--cobalt-tint);
+  border-radius: 999px;
+}
+
+@media (max-width: 800px) {
+  .figures {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}

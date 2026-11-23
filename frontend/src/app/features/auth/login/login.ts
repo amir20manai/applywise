@@ -33,7 +33,7 @@ export class Login {
     this.errorMessage.set('');
 
     this.auth.login(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: () => this.router.navigate([this.auth.homePath()]),
       error: (err) => {
         this.loading.set(false);
         this.errorMessage.set(err.error?.message ?? 'Connection error');
