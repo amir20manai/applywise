@@ -73,15 +73,23 @@
               }
             </td>
             <td>
-              <label class="status">
-                <span class="dot" [style.background]="color(app.status)"></span>
-                <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
-                        [attr.aria-label]="'Status of ' + app.candidateName">
-                  @for (s of statuses; track s.key) {
-                    <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
-                  }
-                </select>
-              </label>
+              @if (app.status === 'WITHDRAWN') {
+                <span class="pill">
+                  <span class="dot" [style.background]="color(app.status)"></span>
+                  {{ statusLabel(app.status) }}
+                </span>
+                <span class="cell-sub">The candidate withdrew</span>
+              } @else {
+                <label class="status">
+                  <span class="dot" [style.background]="color(app.status)"></span>
+                  <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
+                          [attr.aria-label]="'Status of ' + app.candidateName">
+                    @for (s of decisionStatuses; track s.key) {
+                      <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
+                    }
+                  </select>
+                </label>
+              }
             </td>
             <td>
               <div class="cell-actions">

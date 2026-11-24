@@ -1,9 +1,9 @@
 <header class="page-head">
   <div>
-    <h1>Applications</h1>
-    <p>Every role you applied to, and where it stands.</p>
+    <h1>My applications</h1>
+    <p>The answer of each recruiter, in one place.</p>
   </div>
-  <a class="btn btn-primary" routerLink="/applications/new">Add application</a>
+  <a class="btn btn-primary" routerLink="/job-offers">Browse job offers</a>
 </header>
 
 <div class="filters" role="group" aria-label="Filter by status">
@@ -30,8 +30,11 @@
     @if (filter()) {
       <p>No application with this status.</p>
     } @else {
-      <p>You have not added any application yet.</p>
-      <p class="hint">Save a role you applied to, or browse the job offers and apply in one click.</p>
+      <p>You have not applied to any job yet.</p>
+      <p class="hint">
+        Find a role you like and send your application in a few clicks.
+        <a class="text-link" routerLink="/job-offers">Browse job offers</a>
+      </p>
     }
   </div>
 } @else {
@@ -40,7 +43,6 @@
       <thead>
         <tr>
           <th scope="col">Role</th>
-          <th scope="col">Location</th>
           <th scope="col">Applied</th>
           <th scope="col">CV</th>
           <th scope="col">Status</th>
@@ -52,126 +54,33 @@
           <tr>
             <td>
               <strong>{{ app.jobTitle }}</strong>
-              <span class="cell-sub">{{ app.companyName }}</span>
+              <span class="cell-sub">
+                {{ app.companyName }}@if (app.location) {, {{ app.location }}}
+              </span>
             </td>
-            <td>{{ app.location || '-' }}</td>
             <td>{{ app.appliedAt | date: 'd MMM y' }}</td>
             <td class="cv">{{ app.resumeFileName || '-' }}</td>
             <td>
-              @if (app.jobOfferId === null) {
-                <label class="status">
-                  <span class="dot" [style.background]="color(app.status)"></span>
-                  <select class="input" [value]="app.status" (change)="changeStatus(app, $event)"
-                          [attr.aria-label]="'Status of ' + app.jobTitle">
-                    @for (s of statuses; track s.key) {
-                      <option [value]="s.key" [selected]="s.key === app.status">{{ s.label }}</option>
-                    }
-                  </select>
-                </label>
-              } @else {
-                <span class="pill">
-                  <span class="dot" [style.background]="color(app.status)"></span>
-                  {{ statusLabel(app.status) }}
-                </span>
-              }
+              <span class="pill">
+                <span class="dot" [style.background]="color(app.status)"></span>
+                {{ label(app.status) }}
+              </span>
+              <span class="cell-sub hint-line">{{ message(app.status) }}</span>
             </td>
             <td>
               <div class="cell-actions">
-                @if (app.jobOfferId !== null && app.status !== 'WITHDRAWN') {
-                  <button type="button" class="btn btn-secondary btn-sm" (click)="withdraw(app)"
+                @if (app.status === 'INTERVIEW') {
+                  <a class="btn btn-primary btn-sm" routerLink="/interviews">View interview</a>
+                }
+                @if (canWithdraw(app)) {
+                  <button type="button" class="btn btn-danger btn-sm" (click)="withdraw(app)"
                           [attr.aria-label]="'Withdraw ' + app.jobTitle">
                     Withdraw
                   </button>
                 }
-                <button type="button" class="btn btn-ai btn-sm"
-                        [attr.aria-expanded]="mailFor() === app.id"
-                        (click)="toggleMail(app)">
-                  Write email
-                </button>
-                <a class="btn btn-secondary btn-sm" [routerLink]="['/applications', app.id, 'edit']"
-                   [attr.aria-label]="'Edit ' + app.jobTitle">Edit</a>
-                <button type="button" class="btn btn-danger btn-sm" (click)="remove(app)"
-                        [attr.aria-label]="'Delete ' + app.jobTitle">
-                  Delete
-                </button>
               </div>
             </td>
           </tr>
-
-          @if (mailFor() === app.id) {
-            <tr class="mail-row">
-              <td colspan="6">
-                <section class="ai-box" [attr.aria-label]="'Email for ' + app.jobTitle">
-                  <div class="mail-head">
-                    <h2>Write an email with AI</h2>
-                    <button type="button" class="link" (click)="toggleMail(app)">Close</button>
-                  </div>
-                  <p class="ai-note">
-                    Only your name, the job title, the company, the status and the text below are
-                    sent. Your CV, email and phone number are not.
-                  </p>
-
-                  <div class="mail-grid">
-                    <div class="field">
-                      <label [for]="'purpose-' + app.id">Type of email</label>
-                      <select class="input" [id]="'purpose-' + app.id" [value]="mailPurpose()"
-                              (change)="setMailPurpose($event)">
-                        <option value="follow_up">Follow-up (no answer yet)</option>
-                        <option value="thank_you">Thank you (after an interview)</option>
-                      </select>
-                    </div>
-
-                    <div class="field">
-                      <label [for]="'language-' + app.id">Language</label>
-                      <select class="input" [id]="'language-' + app.id" [value]="mailLanguage()"
-                              (change)="setMailLanguage($event)">
-                        <option value="en">English</option>
-                        <option value="fr">French</option>
-                      </select>
-                    </div>
-
-                    <div class="field wide">
-                      <label [for]="'details-' + app.id">Anything to mention? (optional)</label>
-                      <textarea class="input" [id]="'details-' + app.id" rows="3" maxlength="1000"
-                                placeholder="Recruiter name, a topic from the interview, your availability..."
-                                [value]="mailDetails()" (input)="setMailDetails($event)"></textarea>
-                    </div>
-                  </div>
-
-                  @if (mailError()) {
-                    <div class="alert" role="alert">{{ mailError() }}</div>
-                  }
-
-                  <div class="mail-actions">
-                    <button type="button" class="btn btn-primary" [disabled]="mailLoading()"
-                            (click)="generateMail(app)">
-                      {{ mailLoading() ? 'Writing...' : mailText() ? 'Write again' : 'Write email' }}
-                    </button>
-                    @if (mailLoading()) {
-                      <span class="muted" role="status">This can take a few seconds.</span>
-                    }
-                  </div>
-
-                  @if (mailText()) {
-                    <label class="sr-only" [for]="'text-' + app.id">Email text</label>
-                    <textarea class="input mail-text" [id]="'text-' + app.id" rows="10"
-                              [value]="mailText()" (input)="setMailText($event)"></textarea>
-
-                    <div class="mail-actions">
-                      <button type="button" class="btn btn-secondary" (click)="copyMail()">
-                        {{ copied() ? 'Copied' : 'Copy' }}
-                      </button>
-                      <a class="btn btn-secondary" [href]="mailto()">Open in your email app</a>
-                    </div>
-
-                    <p class="ai-note">
-                      Written by AI. Read it, fix the names and the facts, then send it yourself.
-                    </p>
-                  }
-                </section>
-              </td>
-            </tr>
-          }
         }
       </tbody>
     </table>

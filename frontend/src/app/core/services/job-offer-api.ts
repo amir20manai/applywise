@@ -16,6 +16,10 @@ export class JobOfferApi {
     return this.http.get<JobOffer[]>(`${API_URL}/job-offers`, { params });
   }
 
+  get(id: number): Observable<JobOffer> {
+    return this.http.get<JobOffer>(`${API_URL}/job-offers/${id}`);
+  }
+
   create(payload: JobOfferPayload): Observable<JobOffer> {
     return this.http.post<JobOffer>(`${API_URL}/job-offers`, payload);
   }

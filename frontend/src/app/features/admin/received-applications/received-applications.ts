@@ -22,6 +22,12 @@ export class ReceivedApplications implements OnInit {
   private toast = inject(ToastService);
 
   statuses = STATUSES;
+  // Le recruteur ne peut pas mettre "Withdrawn": seul le candidat retire sa candidature
+  decisionStatuses = STATUSES.filter((s) => s.key !== 'WITHDRAWN');
+
+  statusLabel(status: ApplicationStatus): string {
+    return STATUSES.find((s) => s.key === status)?.label ?? status;
+  }
   items = signal<AdminApplication[]>([]);
   filter = signal<ApplicationStatus | null>(null);
   loading = signal(true);

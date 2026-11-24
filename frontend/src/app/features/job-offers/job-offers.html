@@ -25,12 +25,6 @@
 @if (summaryError()) {
   <div class="alert" role="alert">{{ summaryError() }}</div>
 }
-@if (resumesLoaded() && defaultResumeId() === null) {
-  <div class="info" role="note">
-    You have not uploaded a CV yet, so your applications will be sent without one.
-    <a class="text-link" routerLink="/resumes">Upload a CV</a>
-  </div>
-}
 
 @if (loading()) {
   <p class="muted">Loading job offers...</p>
@@ -41,10 +35,7 @@
       <p class="hint">Try a shorter title or clear the location.</p>
     } @else {
       <p>No job offer has been published yet.</p>
-      <p class="hint">
-        You can still save a role you found on another site.
-        <a class="text-link" routerLink="/applications/new">Add an application</a>
-      </p>
+      <p class="hint">Come back soon: recruiters publish new offers regularly.</p>
     }
   </div>
 } @else {
@@ -72,12 +63,9 @@
             </button>
 
             @if (appliedIds().has(offer.id)) {
-              <span class="applied pill pill-success">Applied</span>
+              <a class="applied pill pill-success" routerLink="/applications">Applied</a>
             } @else {
-              <button type="button" class="btn btn-primary" [disabled]="applyingId() === offer.id"
-                      (click)="apply(offer)">
-                {{ applyingId() === offer.id ? 'Applying...' : 'Apply' }}
-              </button>
+              <a class="btn btn-primary" [routerLink]="['/job-offers', offer.id, 'apply']">Apply</a>
             }
           </div>
         </div>

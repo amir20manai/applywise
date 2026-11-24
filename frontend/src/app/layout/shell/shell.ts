@@ -35,7 +35,7 @@ export class Shell implements OnInit, OnDestroy {
 
     { label: 'Dashboard', path: '/dashboard', audience: 'candidate' },
     { label: 'Job offers', path: '/job-offers', audience: 'candidate' },
-    { label: 'Applications', path: '/applications', audience: 'candidate' },
+    { label: 'My applications', path: '/applications', audience: 'candidate' },
     { label: 'Interviews', path: '/interviews', audience: 'candidate' },
     { label: 'My CVs', path: '/resumes', audience: 'candidate' },
     { label: 'Notifications', path: '/notifications', audience: 'candidate' },

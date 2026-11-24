@@ -38,6 +38,19 @@ public class Application {
     @Column(length = 3000)
     private String coverLetter;
 
+    // Coordonnées saisies par le candidat dans le formulaire de candidature
+    @Column(length = 100)
+    private String applicantFirstName;
+
+    @Column(length = 100)
+    private String applicantLastName;
+
+    @Column(length = 255)
+    private String applicantEmail;
+
+    @Column(length = 30)
+    private String applicantPhone;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus status;
@@ -60,7 +73,7 @@ public class Application {
         updatedAt = LocalDateTime.now();
 
         if (status == null) {
-            status = ApplicationStatus.PENDING;
+            status = ApplicationStatus.APPLIED;
         }
     }
 

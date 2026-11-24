@@ -10,9 +10,9 @@ import { Register } from './features/auth/register/register';
 import { Shell } from './layout/shell/shell';
 import { Dashboard } from './features/dashboard/dashboard';
 import { Applications } from './features/applications/applications';
-import { ApplicationForm } from './features/applications/application-form/application-form';
 import { Resumes } from './features/resumes/resumes';
 import { JobOffers } from './features/job-offers/job-offers';
+import { Apply } from './features/job-offers/apply/apply';
 import { Interviews } from './features/interviews/interviews';
 import { Notifications } from './features/notifications/notifications';
 import { Profile } from './features/profile/profile';
@@ -44,13 +44,8 @@ export const routes: Routes = [
       // Candidate pages
       { path: 'dashboard', component: Dashboard, title: title('Dashboard') },
       { path: 'job-offers', component: JobOffers, title: title('Job offers') },
-      { path: 'applications/new', component: ApplicationForm, title: title('Add application') },
-      {
-        path: 'applications/:id/edit',
-        component: ApplicationForm,
-        title: title('Edit application'),
-      },
-      { path: 'applications', component: Applications, title: title('Applications') },
+      { path: 'job-offers/:id/apply', component: Apply, title: title('Apply') },
+      { path: 'applications', component: Applications, title: title('My applications') },
       { path: 'interviews', component: Interviews, title: title('Interviews') },
       { path: 'resumes', component: Resumes, title: title('My CVs') },
       { path: 'notifications', component: Notifications, title: title('Notifications') },
@@ -80,6 +75,5 @@ export const routes: Routes = [
   },
 
   // ---------- Any other address ----------
-  // Signed out -> /login, candidate -> /dashboard, admin -> /admin/overview
   { path: '**', redirectTo: homeRedirect },
 ];

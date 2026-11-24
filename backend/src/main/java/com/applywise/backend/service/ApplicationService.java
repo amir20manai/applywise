@@ -1,10 +1,12 @@
 package com.applywise.backend.service;
 
-import com.applywise.backend.dto.ApplicationRequest;
 import com.applywise.backend.dto.ApplicationResponse;
+import com.applywise.backend.dto.ApplyRequest;
 import com.applywise.backend.entity.Application;
 import com.applywise.backend.entity.ApplicationStatus;
 import com.applywise.backend.entity.JobOffer;
+import com.applywise.backend.entity.NotificationType;
+import com.applywise.backend.entity.OfferStatus;
 import com.applywise.backend.entity.Resume;
 import com.applywise.backend.entity.User;
 import com.applywise.backend.exception.BadRequestException;
@@ -15,83 +17,84 @@ import com.applywise.backend.repository.JobOfferRepository;
 import com.applywise.backend.repository.ResumeRepository;
 import com.applywise.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.applywise.backend.entity.NotificationType;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
+// Le candidat envoie sa candidature à une offre, puis la suit. Le recruteur décide
+// (voir AdminApplicationService): le candidat peut seulement retirer la sienne.
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
+
+    private static final Set<ApplicationStatus> WITHDRAWABLE = EnumSet.of(
+            ApplicationStatus.APPLIED,
+            ApplicationStatus.UNDER_REVIEW,
+            ApplicationStatus.INTERVIEW);
 
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final JobOfferRepository jobOfferRepository;
     private final ResumeRepository resumeRepository;
     private final NotificationService notificationService;
-    // CREATE
+
+    // APPLY
     @Transactional
-    public ApplicationResponse create(String email, ApplicationRequest request) {
+    public ApplicationResponse apply(String email, ApplyRequest request) {
 
         User user = findUser(email);
 
+        JobOffer offer = jobOfferRepository.findWithCompanyById(request.getJobOfferId())
+                .orElseThrow(() -> new ResourceNotFoundException("Job offer not found"));
+
+        boolean closed = offer.getStatus() != OfferStatus.ACTIVE
+                || (offer.getDeadline() != null && offer.getDeadline().isBefore(LocalDateTime.now()));
+        if (closed) {
+            throw new BadRequestException("This offer is no longer open");
+        }
+
+        if (applicationRepository.existsByUserIdAndJobOfferId(user.getId(), offer.getId())) {
+            throw new ConflictException("You already applied to this offer");
+        }
+
+        Resume resume = findOwnedResume(user, request.getResumeId());
+
         Application application = new Application();
         application.setUser(user);
+        application.setJobOffer(offer);
+        application.setJobTitle(offer.getTitle());
+        application.setCompanyName(
+                offer.getCompany() != null ? offer.getCompany().getName() : "Company not listed");
+        application.setLocation(offer.getLocation());
+        application.setJobUrl(offer.getSourceUrl());
 
-        if (request.getJobOfferId() != null) {
+        application.setApplicantFirstName(request.getFirstName().trim());
+        application.setApplicantLastName(request.getLastName().trim());
+        application.setApplicantEmail(request.getEmail().trim());
+        application.setApplicantPhone(request.getPhone().trim());
 
-            // Une seule candidature par offre pour chaque utilisateur
-            if (applicationRepository.existsByUserIdAndJobOfferId(
-                    user.getId(), request.getJobOfferId())) {
-                throw new ConflictException("You already applied to this offer");
-            }
+        String letter = request.getCoverLetter();
+        application.setCoverLetter(letter == null || letter.isBlank() ? null : letter.trim());
 
-            // Candidature sur une offre de la plateforme
-            JobOffer offer = jobOfferRepository.findById(request.getJobOfferId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Job offer not found"));
+        application.setResume(resume);
+        application.setStatus(ApplicationStatus.APPLIED);
 
-            application.setJobOffer(offer);
-            application.setJobTitle(offer.getTitle());
-            application.setCompanyName(
-                    offer.getCompany() != null
-                            ? offer.getCompany().getName()
-                            : request.getCompanyName()
-            );
-            application.setLocation(
-                    isBlank(request.getLocation()) ? offer.getLocation() : request.getLocation()
-            );
-            application.setJobUrl(
-                    isBlank(request.getJobUrl()) ? offer.getSourceUrl() : request.getJobUrl()
-            );
-        } else {
-            // Candidature sur une offre externe (LinkedIn...)
-            if (isBlank(request.getJobTitle()) || isBlank(request.getCompanyName())) {
-                throw new BadRequestException(
-                        "Job title and company name are required when no job offer is selected"
-                );
-            }
-            application.setJobTitle(request.getJobTitle());
-            application.setCompanyName(request.getCompanyName());
-            application.setLocation(request.getLocation());
-            application.setJobUrl(request.getJobUrl());
-        }
+        Application saved = applicationRepository.save(application);
 
-        if (isBlank(application.getCompanyName())) {
-            throw new BadRequestException("Company name is required");
-        }
+        notificationService.create(
+                user,
+                "Application sent",
+                "Your application for " + saved.getJobTitle() + " at " + saved.getCompanyName()
+                        + " was sent. You will be notified when the recruiter answers.",
+                NotificationType.APPLICATION_UPDATE
+        );
 
-        application.setNotes(request.getNotes());
-        application.setCoverLetter(request.getCoverLetter());
-        application.setStatus(request.getStatus());   // null -> PENDING (@PrePersist)
-
-        if (request.getResumeId() != null) {
-            application.setResume(findOwnedResume(user, request.getResumeId()));
-        }
-
-        return toResponse(applicationRepository.save(application));
+        return toResponse(saved);
     }
 
     // LIST (filtre status optionnel, les plus récentes d'abord)
@@ -117,103 +120,23 @@ public class ApplicationService {
         return toResponse(findOwnedApplication(user, id));
     }
 
-    // UPDATE
+    // WITHDRAW
     @Transactional
-    public ApplicationResponse update(String email, Long id, ApplicationRequest request) {
+    public ApplicationResponse withdraw(String email, Long id) {
 
         User user = findUser(email);
         Application application = findOwnedApplication(user, id);
 
-        if (!isBlank(request.getJobTitle())) {
-            application.setJobTitle(request.getJobTitle());
-        }
-        if (!isBlank(request.getCompanyName())) {
-            application.setCompanyName(request.getCompanyName());
+        if (!WITHDRAWABLE.contains(application.getStatus())) {
+            throw new BadRequestException("This application can no longer be withdrawn");
         }
 
-        application.setJobUrl(request.getJobUrl());
-        application.setLocation(request.getLocation());
-        application.setNotes(request.getNotes());
-        application.setCoverLetter(request.getCoverLetter());
-
-        if (request.getStatus() != null) {
-            checkCandidateMayChangeStatus(application, request.getStatus());
-            changeStatus(application, request.getStatus());
-        }
-        if (request.getResumeId() != null) {
-            application.setResume(findOwnedResume(user, request.getResumeId()));
-        }
-
-        // Pas de save() : dirty checking
-        return toResponse(application);
-    }
-
-    // UPDATE STATUS
-    @Transactional
-    public ApplicationResponse updateStatus(String email, Long id, ApplicationStatus status) {
-
-        if (status == null) {
-            throw new BadRequestException("Status is required");
-        }
-
-        User user = findUser(email);
-        Application application = findOwnedApplication(user, id);
-
-        checkCandidateMayChangeStatus(application, status);
-        changeStatus(application, status);
+        application.setStatus(ApplicationStatus.WITHDRAWN);
 
         return toResponse(application);
-    }
-
-    // DELETE
-    @Transactional
-    public void delete(String email, Long id) {
-
-        User user = findUser(email);
-        Application application = findOwnedApplication(user, id);
-
-        try {
-            applicationRepository.delete(application);
-            applicationRepository.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw new ConflictException(
-                    "Application cannot be deleted because interviews are linked to it"
-            );
-        }
     }
 
     // ---------- méthodes privées ----------
-    // Pour une offre de la plateforme, c'est le recruteur qui gère le status.
-    // Le candidat peut seulement retirer sa candidature.
-    private void checkCandidateMayChangeStatus(Application application, ApplicationStatus newStatus) {
-        if (application.getJobOffer() == null
-                || newStatus == application.getStatus()
-                || newStatus == ApplicationStatus.WITHDRAWN) {
-            return;
-        }
-        throw new BadRequestException(
-                "The recruiter manages the status of this application. You can only withdraw it.");
-    }
-    // Change le status et crée une notification (seulement si le status a vraiment changé)
-    private void changeStatus(Application application, ApplicationStatus newStatus) {
-
-        ApplicationStatus oldStatus = application.getStatus();
-
-        if (oldStatus == newStatus) {
-            return;
-        }
-
-        application.setStatus(newStatus);
-
-        notificationService.create(
-                application.getUser(),
-                "Application updated",
-                "Your application for " + application.getJobTitle()
-                        + " at " + application.getCompanyName()
-                        + " is now " + newStatus.name(),
-                NotificationType.APPLICATION_UPDATE
-        );
-    }
 
     private User findUser(String email) {
         return userRepository.findByEmail(email)
@@ -242,13 +165,9 @@ public class ApplicationService {
         return resume;
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
-
     private ApplicationResponse toResponse(Application application) {
 
-        JobOffer offer = application.getJobOffer();   // peut être null
+        JobOffer offer = application.getJobOffer();   // peut être null (anciennes données)
         Resume resume = application.getResume();      // peut être null
 
         return ApplicationResponse.builder()

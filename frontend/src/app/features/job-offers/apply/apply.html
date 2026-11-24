@@ -1,0 +1,186 @@
+<header class="page-head">
+  <div>
+    <a class="back" routerLink="/job-offers">Back to job offers</a>
+    <h1>Apply</h1>
+    @if (offer(); as o) {
+      <p>
+        {{ o.title }} at {{ o.companyName || 'this company' }}@if (o.location) {, {{ o.location }}}
+        @if (o.deadline) { (apply before {{ o.deadline | date: 'd MMM y' }}) }
+      </p>
+    }
+  </div>
+</header>
+
+@if (loadError()) {
+  <div class="alert" role="alert">{{ loadError() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Loading the offer...</p>
+} @else {
+  @if (offer()) {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <p class="intro">
+        The recruiter will see the details below, your CV and your cover letter.
+        You will be notified when they answer.
+      </p>
+
+      @if (submitError()) {
+        <div class="alert" role="alert">{{ submitError() }}</div>
+      }
+
+      <!-- 1. Your details -->
+      <section class="panel" aria-labelledby="details-title">
+        <h2 id="details-title">Your details</h2>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" class="input" type="text" formControlName="firstName"
+                   autocomplete="given-name"
+                   [class.invalid]="f.firstName.touched && f.firstName.invalid" />
+            @if (f.firstName.touched && f.firstName.invalid) {
+              <span class="field-error">Enter your first name.</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" class="input" type="text" formControlName="lastName"
+                   autocomplete="family-name"
+                   [class.invalid]="f.lastName.touched && f.lastName.invalid" />
+            @if (f.lastName.touched && f.lastName.invalid) {
+              <span class="field-error">Enter your last name.</span>
+            }
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" class="input" type="email" formControlName="email"
+                   autocomplete="email"
+                   [class.invalid]="f.email.touched && f.email.invalid" />
+            @if (f.email.touched && f.email.invalid) {
+              <span class="field-error">Enter a valid email address.</span>
+            }
+          </div>
+
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input id="phone" class="input" type="tel" formControlName="phone"
+                   autocomplete="tel" placeholder="22 123 456"
+                   [class.invalid]="f.phone.touched && f.phone.invalid" />
+            @if (f.phone.touched && f.phone.invalid) {
+              <span class="field-error">Enter a phone number the recruiter can call.</span>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. CV -->
+      <section class="panel" aria-labelledby="cv-title">
+        <h2 id="cv-title">Your CV</h2>
+
+        <input #picker type="file" hidden
+               accept=".pdf,.doc,.docx,application/pdf"
+               (change)="onFileSelected($event)" />
+
+        @if (resumes().length === 0) {
+          <p class="muted cv-empty">
+            You have no CV yet. Upload one to apply (PDF, DOC or DOCX, up to 5 MB).
+          </p>
+        } @else {
+          <div class="field">
+            <label for="resumeId">CV sent with your application</label>
+            <select id="resumeId" class="input" formControlName="resumeId"
+                    [class.invalid]="f.resumeId.touched && f.resumeId.invalid">
+              <option [ngValue]="null">Choose a CV</option>
+              @for (r of resumes(); track r.id) {
+                <option [ngValue]="r.id">{{ r.fileName }}</option>
+              }
+            </select>
+            @if (f.resumeId.touched && f.resumeId.invalid) {
+              <span class="field-error">Choose the CV to send.</span>
+            }
+          </div>
+        }
+
+        @if (uploadError()) {
+          <div class="alert" role="alert">{{ uploadError() }}</div>
+        }
+
+        @if (resumes().length === 0 && f.resumeId.touched) {
+          <p class="field-error cv-empty" role="alert">A CV is required to apply.</p>
+        }
+
+        <button type="button" class="btn btn-secondary" [disabled]="uploading()" (click)="picker.click()">
+          {{ uploading() ? 'Uploading...' : resumes().length === 0 ? 'Upload a CV' : 'Upload another CV' }}
+        </button>
+      </section>
+
+      <!-- 3. Cover letter -->
+      <section class="panel" aria-labelledby="letter-title">
+        <h2 id="letter-title">Cover letter <span class="optional">(optional)</span></h2>
+
+        <section class="ai-box ai-spacing" aria-labelledby="ai-title">
+          <h3 id="ai-title">Write it with AI</h3>
+          <p class="ai-note">
+            Only your name, the job title, the company, the location and the text below are sent.
+            Your CV, email and phone number are not.
+          </p>
+
+          <div class="ai-row">
+            <div class="field">
+              <label for="aiHighlights">What should the letter highlight? (optional)</label>
+              <textarea id="aiHighlights" class="input" rows="3" formControlName="aiHighlights"
+                        placeholder="Skills, projects, why you want this role..."
+                        [class.invalid]="f.aiHighlights.invalid"></textarea>
+              @if (f.aiHighlights.invalid) {
+                <span class="field-error">Keep it under 1500 characters.</span>
+              }
+            </div>
+
+            <div class="field">
+              <label for="aiLanguage">Language</label>
+              <select id="aiLanguage" class="input" formControlName="aiLanguage">
+                <option value="en">English</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+          </div>
+
+          @if (aiError()) {
+            <div class="alert" role="alert">{{ aiError() }}</div>
+          }
+
+          <div class="ai-actions">
+            <button type="button" class="btn btn-ai" [disabled]="generating()" (click)="generateLetter()">
+              {{ generating() ? 'Writing...' : 'Generate cover letter' }}
+            </button>
+            @if (generating()) {
+              <span class="muted" role="status">This can take a few seconds.</span>
+            }
+          </div>
+        </section>
+
+        <div class="field">
+          <label for="coverLetter">Your letter</label>
+          <textarea id="coverLetter" class="input" rows="10" formControlName="coverLetter"
+                    placeholder="Write your own, or generate one above and edit it. You can also leave this empty."
+                    [class.invalid]="f.coverLetter.invalid"></textarea>
+          @if (f.coverLetter.invalid) {
+            <span class="field-error">The cover letter can have up to 3000 characters.</span>
+          }
+        </div>
+      </section>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Sending...' : 'Send application' }}
+        </button>
+        <a class="btn btn-secondary" routerLink="/job-offers">Cancel</a>
+      </div>
+    </form>
+  }
+}

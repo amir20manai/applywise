@@ -9,7 +9,7 @@
       }}
     </p>
   </div>
-  <a class="btn btn-primary" routerLink="/applications/new">Add application</a>
+  <a class="btn btn-primary" routerLink="/job-offers">Browse job offers</a>
 </header>
 
 @if (error()) {
@@ -149,8 +149,8 @@
         <p class="error-text">{{ applicationsError() }}</p>
       } @else if (recent().length === 0) {
         <p class="empty-text">
-          Nothing here yet. <a class="text-link" routerLink="/job-offers">Browse job offers</a> or
-          <a class="text-link" routerLink="/applications/new">add an application</a>.
+          Nothing here yet. <a class="text-link" routerLink="/job-offers">Browse job offers</a>
+          and send your first application.
         </p>
       } @else {
         <ul class="rows">

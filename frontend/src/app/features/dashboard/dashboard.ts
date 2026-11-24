@@ -78,7 +78,7 @@ export class Dashboard implements OnInit {
       },
       {
         label: 'Apply to a job offer',
-        hint: 'Browse the open roles, or save one you found on another site.',
+        hint: 'Browse the open roles and send your application in a few clicks.',
         action: 'Browse offers',
         link: '/job-offers',
         done: (s?.totalApplications ?? 0) > 0,

@@ -46,25 +46,30 @@ public class AdminApplicationService {
                 .toList();
     }
 
-    // Change le status et prévient le candidat
+    // Décision du recruteur: le candidat est prévenu
     @Transactional
     public AdminApplicationResponse updateStatus(Long id, ApplicationStatus status) {
 
         if (status == null) {
             throw new BadRequestException("Status is required");
         }
+        if (status == ApplicationStatus.WITHDRAWN || status == ApplicationStatus.PENDING) {
+            throw new BadRequestException("This status cannot be set by the recruiter");
+        }
 
         Application application = findPlatformApplication(id);
+
+        if (application.getStatus() == ApplicationStatus.WITHDRAWN) {
+            throw new BadRequestException("The candidate withdrew this application");
+        }
 
         if (application.getStatus() != status) {
             application.setStatus(status);
 
             notificationService.create(
                     application.getUser(),
-                    "Application updated",
-                    "Your application for " + application.getJobTitle()
-                            + " at " + application.getCompanyName()
-                            + " is now " + status.name().toLowerCase().replace('_', ' ') + ".",
+                    "Application update",
+                    statusMessage(application, status),
                     NotificationType.APPLICATION_UPDATE
             );
         }
@@ -104,6 +109,9 @@ public class AdminApplicationService {
         User candidate = application.getUser();
         Resume resume = application.getResume();
 
+        String firstName = valueOrDefault(application.getApplicantFirstName(), candidate.getFirstName());
+        String lastName = valueOrDefault(application.getApplicantLastName(), candidate.getLastName());
+
         return new AdminApplicationResponse(
                 application.getId(),
                 application.getJobTitle(),
@@ -114,12 +122,30 @@ public class AdminApplicationService {
                 application.getStatus(),
                 application.getAppliedAt(),
                 candidate.getId(),
-                candidate.getFirstName() + " " + candidate.getLastName(),
-                candidate.getEmail(),
-                candidate.getPhone(),
+                firstName + " " + lastName,
+                valueOrDefault(application.getApplicantEmail(), candidate.getEmail()),
+                valueOrDefault(application.getApplicantPhone(), candidate.getPhone()),
                 resume != null ? resume.getId() : null,
                 resume != null ? resume.getFileName() : null,
                 interviewCount
         );
+    }
+
+    private String statusMessage(Application application, ApplicationStatus status) {
+        String role = application.getJobTitle() + " at " + application.getCompanyName();
+
+        return switch (status) {
+            case ACCEPTED -> "Good news: your application for " + role + " was accepted.";
+            case REJECTED -> "Your application for " + role + " was not selected this time.";
+            case UNDER_REVIEW -> "The recruiter is now reviewing your application for " + role + ".";
+            case INTERVIEW -> "You are invited to an interview for " + role
+                    + ". Check the Interviews page for the details.";
+            default -> "Your application for " + role + " is now "
+                    + status.name().toLowerCase().replace('_', ' ') + ".";
+        };
+    }
+
+    private String valueOrDefault(String value, String fallback) {
+        return (value == null || value.isBlank()) ? fallback : value;
     }
 }
