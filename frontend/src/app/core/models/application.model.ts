@@ -23,8 +23,8 @@ export interface Application {
   resumeFileName: string | null;
 }
 
+// Une candidature est envoyée tout de suite (Applied): il n'y a plus de "Pending"
 export const STATUSES: { key: ApplicationStatus; label: string; color: string }[] = [
-  { key: 'PENDING', label: 'Pending', color: '#8b9bb0' },
   { key: 'APPLIED', label: 'Applied', color: '#2457f5' },
   { key: 'UNDER_REVIEW', label: 'Under review', color: '#8a63d2' },
   { key: 'INTERVIEW', label: 'Interview', color: '#e0a21b' },
@@ -33,13 +33,12 @@ export const STATUSES: { key: ApplicationStatus; label: string; color: string }[
   { key: 'WITHDRAWN', label: 'Withdrawn', color: '#b8c2cd' },
 ];
 
-export interface ApplicationPayload {
-  jobTitle: string;
-  companyName: string;
-  location?: string;
-  jobUrl?: string;
-  notes?: string;
+export interface ApplyPayload {
+  jobOfferId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  resumeId: number;
   coverLetter?: string;
-  status: ApplicationStatus;
-  resumeId?: number;
 }
